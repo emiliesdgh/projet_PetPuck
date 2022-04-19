@@ -35,7 +35,7 @@ static void serial_start(void)
 }
 
 static void timer12_start(void){
-    //General Purpose Timer configuration   
+    //General Purpose Timer configuration
     //timer 12 is a 16 bit timer so we can measure time
     //to about 65ms with a 1Mhz counter
     static const GPTConfig gpt12cfg = {
@@ -53,9 +53,9 @@ static void timer12_start(void){
 int main(void)
 {
 
-//    halInit();
-//    chSysInit();
-//    mpu_init();
+    halInit();
+    chSysInit();
+    mpu_init();
 
     //starts the serial communication
     serial_start();
@@ -94,16 +94,16 @@ int main(void)
         float* bufferOutput = get_audio_buffer_ptr(LEFT_OUTPUT);
 
         uint16_t size = ReceiveInt16FromComputer((BaseSequentialStream *) &SD3, bufferCmplxInput, FFT_SIZE);
-//
-//        if(size == FFT_SIZE){
-//
-//            doFFT_optimized(FFT_SIZE, bufferCmplxInput);
-//
-//            arm_cmplx_mag_f32(bufferCmplxInput, bufferOutput, FFT_SIZE);
-//
-//            SendFloatToComputer((BaseSequentialStream *) &SD3, bufferOutput, FFT_SIZE);
-//
-//        }
+
+        if(size == FFT_SIZE){
+
+            doFFT_optimized(FFT_SIZE, bufferCmplxInput);
+
+            arm_cmplx_mag_f32(bufferCmplxInput, bufferOutput, FFT_SIZE);
+
+            SendFloatToComputer((BaseSequentialStream *) &SD3, bufferOutput, FFT_SIZE);
+
+        }
 #endif  /* SEND_FROM_MIC */
     }
 }

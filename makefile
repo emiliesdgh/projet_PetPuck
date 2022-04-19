@@ -8,6 +8,7 @@ PROJECT = PetPuck
 #Define path to the e-puck2_main-processor folder
 GLOBAL_PATH = ../../lib/e-puck2_main-processor
 
+
 #Source files to include
 CSRC += ./main.c \
 		./audio_processing.c \
