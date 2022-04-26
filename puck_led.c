@@ -1,5 +1,6 @@
 //#include "main.h"
 #include <puck_led.h>
+#include <leds.h>
 //#include "gpio.h"
 //
 void LedClear(void){
@@ -10,6 +11,8 @@ void LedClear(void){
     palClearPad(GPIOD, GPIOD_LED7);
     palClearPad(GPIOD, GPIOD_LED_FRONT);
     palClearPad(GPIOB, GPIOB_LED_BODY);
+
+    palClearPad(GPIOD, LED2);
 }
 
 void LedSet(void){
@@ -20,16 +23,20 @@ void LedSet(void){
     palSetPad(GPIOD, GPIOD_LED7);
     palSetPad(GPIOD, GPIOD_LED_FRONT);
     palSetPad(GPIOB, GPIOB_LED_BODY);
+
+    palSetPad(GPIOD, LED2);
 }
 
 void GoodMorning(void){
 
 	palTogglePad(GPIOD, GPIOD_LED1);
 	palTogglePad(GPIOD, GPIOD_LED3);
-	palSetPad(GPIOD, GPIOD_LED5);
-    palSetPad(GPIOD, GPIOD_LED7);
-    palSetPad(GPIOD, GPIOD_LED_FRONT);
-    palSetPad(GPIOB, GPIOB_LED_BODY);
+	palTogglePad(GPIOD, GPIOD_LED5);
+    palTogglePad(GPIOD, GPIOD_LED7);
+    palTogglePad(GPIOD, GPIOD_LED_FRONT);
+    palTogglePad(GPIOB, GPIOB_LED_BODY);
+
+    palTogglePad(GPIOD, LED2);
 
 }
 //void SetLed(unsigned int led_number, unsigned int value)
