@@ -14,6 +14,8 @@ CSRC += ./main.c \
 		./audio_processing.c \
 		./communications.c \
 		./fft.c \
+		./puck_led.c \
+		./gpio.c \
 
 #Header folders to include
 INCDIR += 
