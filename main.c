@@ -28,6 +28,8 @@ int main(void)
     GoodMorning();
     LedClear();
 
+//    blahblahbnejhrbsdcf,thncg
+
     /* Infinite loop. */
     while (1) {
     	//waits 1 second
