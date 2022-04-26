@@ -23,10 +23,23 @@ int main(void)
     halInit();
     chSysInit();
     mpu_init();
-    LedClear();
-//        LedSet();
-    GoodMorning();
-    LedClear();
+ //from tp4:
+    //start the USB communication
+    usb_start();
+    //starts the camera
+    dcmi_start();
+	po8030_start();
+	//inits the motors
+	motors_init();
+
+	//stars the thread for the processing of the image
+	process_image_start();
+//end of from TP4
+
+//    LedClear();
+//    LedSet();
+//    GoodMorning();
+//    LedClear();
 
 //    blahblahbnejhrbsdcf,thncg
 

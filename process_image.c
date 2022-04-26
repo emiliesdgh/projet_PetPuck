@@ -19,6 +19,7 @@ static BSEMAPHORE_DECL(image_ready_sem, TRUE);
  *  Returns the line's width extracted from the image buffer given
  *  Returns 0 if line not found
  */
+
 uint16_t extract_line_width(uint8_t *buffer){
 
 	uint16_t i = 0, begin = 0, end = 0, width = 0;
@@ -99,13 +100,36 @@ uint16_t extract_line_width(uint8_t *buffer){
 	}
 }
 
+
+//gets ambient light average and compares it to DUSKDAWN
+void ambient_light(uint8_t *buffer) {
+	static uint8_t newday = 1;
+	uint32_t mean = 0;
+	for(uint16_t i = 0 ; i < IMAGE_BUFFER_SIZE ; i++) {
+			mean += buffer[i];
+		}
+		mean /= IMAGE_BUFFER_SIZE;
+	if (mean >= DUSK && newday) {
+		//call sayGM function
+		newday = 0;
+		palSetPad(GPIOB, GPIOB_LED_BODY);
+	}
+	else if (mean < DAWN && !(newday)) {
+		//call sayGN function
+		newday = 1;
+		palClearPad(GPIOB, GPIOB_LED_BODY);
+	}
+}
+
+
 static THD_WORKING_AREA(waCaptureImage, 256);
 static THD_FUNCTION(CaptureImage, arg) {
 
     chRegSetThreadName(__FUNCTION__);
     (void)arg;
 
-	//Takes pixels 0 to IMAGE_BUFFER_SIZE of the line 10 + 11 (minimum 2 lines because reasons)
+	/* Takes pixels 0 to IMAGE_BUFFER_SIZE of the line 10 + 11 (minimum 2 lines because reasons)
+	 * (reasons being how camera's library is written) */
 	po8030_advanced_config(FORMAT_RGB565, 0, 10, IMAGE_BUFFER_SIZE, 2, SUBSAMPLING_X1, SUBSAMPLING_X1);
 	dcmi_enable_double_buffering();
 	dcmi_set_capture_mode(CAPTURE_ONE_SHOT);
@@ -130,9 +154,9 @@ static THD_FUNCTION(ProcessImage, arg) {
 
 	uint8_t *img_buff_ptr;
 	uint8_t image[IMAGE_BUFFER_SIZE] = {0};
-	uint16_t lineWidth = 0;
+	//uint16_t lineWidth = 0;
 
-	bool send_to_computer = true;
+	//bool send_to_computer = true;
 
     while(1){
     	//waits until an image has been captured
@@ -146,21 +170,9 @@ static THD_FUNCTION(ProcessImage, arg) {
 			//takes nothing from the second byte
 			image[i/2] = (uint8_t)img_buff_ptr[i]&0xF8;
 		}
-
+		ambient_light(image);
 		//search for a line in the image and gets its width in pixels
-		lineWidth = extract_line_width(image);
-
-		//converts the width into a distance between the robot and the camera
-		if(lineWidth){
-			distance_cm = PXTOCM/lineWidth;
-		}
-
-		if(send_to_computer){
-			//sends to the computer the image
-			SendUint8ToComputer(image, IMAGE_BUFFER_SIZE);
-		}
-		//invert the bool
-		send_to_computer = !send_to_computer;
+		//lineWidth = extract_line_width(image);
     }
 }
 
