@@ -18,6 +18,7 @@ CSRC += ./main.c \
 		./gpio.c \
 		./process_image.c \
 		./obstacle_encounter.c \
+		./proximity_sensor.c \
 
 #Header folders to include
 INCDIR += 

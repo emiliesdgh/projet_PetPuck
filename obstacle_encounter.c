@@ -28,7 +28,7 @@
 
 
 
-static uint16_t distance_mm = 0;
+//static uint16_t distance_mm = 0;
 static int16_t speed = 0;
 //distance_mm = get_distance();
 
@@ -82,7 +82,7 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 	(void)arg;
     systime_t time;
 
-    int16_t speed = 0;
+    uint16_t distance_mm = 0;
 
 
 	while(1){
@@ -91,6 +91,7 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 //		distance_mm = kalman1d(VL53L0X_get_dist_mm());
 
 		//need function to modify the value of distance_mm which will be created in file proximity_sensor
+		distance_mm = get_distance_toStop();
 
 		speed = motors_speed(distance_mm);
 
@@ -105,6 +106,6 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 void ObstacleEncounter_start(void){
 
     //création/ initialisation des threads dans la fonction main
-    chThdCreateStatic(waObstacleEncounter, sizeof(ObstacleEncounter), NORMALPRIO, ObstacleEncounter, NULL);
+    chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO, ObstacleEncounter, NULL);
 
 }

@@ -20,6 +20,9 @@
 #include <selector.h>
 #include <timer.h>
 
+#include <obstacle_encounter.h>
+#include <proximity_sensor.h>
+
 
 #include <leds.h>
 #include <motors.h>
@@ -70,6 +73,8 @@ int main(void)
 	ObstacleEncounter_start();	//encounter an obstacle
 
 	motors_init();	//inits the motors
+
+	proximityToStop_start();
 //
 
     //starts timer 12
