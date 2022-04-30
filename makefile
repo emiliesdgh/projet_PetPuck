@@ -17,6 +17,7 @@ CSRC += ./main.c \
 		./puck_led.c \
 		./gpio.c \
 		./process_image.c \
+		./obstacle_encounter.c \
 
 #Header folders to include
 INCDIR += 
