@@ -5,5 +5,6 @@
 
 
 void ObstacleEncounter_start(void);
+int16_t motors_speed(uint16_t distance_mm);
 
 #endif

@@ -67,9 +67,9 @@ int main(void)
 
 //
 	// thread start
-//	ObstacleEncounter_start();	//encounter an obstacle
+	ObstacleEncounter_start();	//encounter an obstacle
 
-//  motors_init();	//inits the motors
+	motors_init();	//inits the motors
 //
 
     //starts timer 12

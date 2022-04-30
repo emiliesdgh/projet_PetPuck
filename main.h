@@ -9,7 +9,9 @@ extern "C" {
 #include "msgbus/messagebus.h"
 #include "parameter/parameter.h"
 
-
+//define for obstacle encounter
+#define SPEED_MAX	1000
+#define	DISTANCE_MIN	10.0f
 
 /** Robot wide IPC bus. */
 extern messagebus_t bus;
