@@ -5,6 +5,7 @@
 #include <leds.h>
 #include <spi_comm.h>
 
+//function to initialise the LED, put them all in state OFF
 void LedClear(void){
 
 	clear_leds();
@@ -71,7 +72,7 @@ void GoodNight(void){
 	}while(led_intensity !=  0);
 
 }
-
+//function to be called when thread panic detects panic mode
 void Led_panic_mode(void){
 
 	for(int i=0; i<4; i++){

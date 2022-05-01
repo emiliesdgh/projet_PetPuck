@@ -60,7 +60,6 @@ static void serial_start(void)
 int main(void)
 {
 
-
     halInit();
     chSysInit();
     mpu_init();
@@ -70,36 +69,49 @@ int main(void)
 	spi_comm_start();	//pour utilier les leds rgb
 
 //
-	// thread start
-	ObstacleEncounter_start();	//encounter an obstacle okkkk pas dans panic
+	//threads start
+	//%%%%%%%%%%%%%%%%%%%%%%%%%
+//	ObstacleEncounter_start();	//initialisation for the obstacle encounter thread
 
-	motors_init();	//inits the motors
+//	motors_init();	//inits the motors
 
-	initial_proximity();
-
-//	proximity_start();	// vas  dans le mode panic mais jsp pkkkkkkk
-
-
-//	proximityToStop_start();
+//	initial_proximity();	//initialisation for the proximity thread
+	//%%%%%%%%%%%%%%%%%%%%%%%%%
 //
 
     //starts timer 12
 //    timer12_start();
 
 //
-    unsigned int a = 20;
+    unsigned int a = 22;
 //    unsigned int b = 5;
 //    palSetPad(GPIOD, GPIOD_LED1);
     LedClear();
 //	palSetPad(GPIOD, GPIOD_LED1);
-//    GoodMorning();
+//
+    GoodMorning();
+//    GoodNight();
+
+//    palTogglePad(GPIOB, GPIOB_LED_BODY);
 //	set_led(2, 2);
 //	LedBlink();
-
+//    while (1) {
+//    	GoodNight();
+//    	chThdSleepMilliseconds(1000);
+//    	palTogglePad(GPIOB, GPIOB_LED_BODY);
+//
+//    }
     do{
+//
+//        GoodMorning();
+//
+//        palTogglePad(GPIOB, GPIOB_LED_BODY);
+//
+//    	chThdSleepMilliseconds(1000);
+//
+//    	palTogglePad(GPIOB, GPIOB_LED_BODY);
 
-    	chThdSleepMilliseconds(1000);
-      GoodMorning();
+//    	GoodNight();
 //    	CircleLed();
 //    	palTogglePad(GPIOB, GPIOB_LED_BODY);
 
