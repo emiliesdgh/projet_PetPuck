@@ -4,67 +4,128 @@
 #include <puck_led.h>
 #include <leds.h>
 #include <spi_comm.h>
-//#include "gpio.h"
 
-static uint8_t tab_rgbLED[NUM_RGB_LED][RED_LED];
-
-void initial_rgb_led(rgb_led_name_t led_number, uint8_t red_val){
-
-	tab_rgbLED[led_number][RED_LED] = red_val;
-}
 void LedClear(void){
 
 	clear_leds();
 
 	palClearPad(GPIOD, GPIOD_LED_FRONT);
 	palClearPad(GPIOB, GPIOB_LED_BODY);
-
 }
 
-
-void GoodMorning(void){	//all this is done in function CicleLed
+//function to be called when thread GoodMorning detects that it's morning
+void GoodMorning(void){
 
 	LedClear();
 
-	static unsigned char no_led = 0;
-	if(no_led == 0)
-	{
-		LedSet_ALL(7, 0);
-		LedSet_ALL(no_led, 1);
-		no_led++;
+	for(int i=0; i<8; i++){
+
+		LedSet_ALL(i,1);
+
+		chThdSleepMilliseconds(100);
 	}
-	else if(no_led == 7)
-	{
-		LedSet_ALL(no_led-1, 0);
-		LedSet_ALL(no_led, 1);
-		no_led = 0;
+
+	for(int i=0; i<8; i++){
+
+		LedSet_ALL(i,0);
+
+		chThdSleepMilliseconds(100);
 	}
-	else
-	{
-		LedSet_ALL(no_led-1,0);
-		LedSet_ALL(no_led, 1);
-		no_led++;
+	for(int i=0; i<8; i++){
+
+		LedSet_ALL(i,1);
 	}
+	palTogglePad(GPIOB, GPIOB_LED_BODY);
+	chThdSleepMilliseconds(1000);
+	for(int i=0; i<8; i++){
+
+			LedSet_ALL(i,0);
+	}
+	palTogglePad(GPIOB, GPIOB_LED_BODY);
+	chThdSleepMilliseconds(1000);
+}
+
+//function to be called when thread GoodNight detects that it's night
+void GoodNight(void){
+
+	LedClear();
+
+	int led_intensity = LED_RGB_INTENSITY;
+	int led_value =  1;
+
+	do{
+
+		for(int i=0; i<8; i++){
+
+			LedSet_intensity(i, led_value, led_intensity);
+		}
+
+		led_intensity = led_intensity - 5;
+
+		if(led_intensity == 5){
+
+			led_value = 0;
+		}
+    	chThdSleepMilliseconds(500);
+
+	}while(led_intensity !=  0);
 
 }
 
-void LedBlink(void)
-{
-	set_led(4, 2);
-	// Send command to esp32 to toggle the state of all leds...comando toggle dalla parte esp32?
+void Led_panic_mode(void){
+
+	for(int i=0; i<4; i++){
+		set_led(i, 1);
+	}
+	chThdSleepMilliseconds(100);
+	for(int i=0; i<4; i++){
+		set_led(i, 0);
+	}
+	chThdSleepMilliseconds(100);
+
+	palTogglePad(GPIOB, GPIOB_LED_BODY);
+	chThdSleepMilliseconds(100);
+
+	palTogglePad(GPIOB, GPIOB_LED_BODY);
+	chThdSleepMilliseconds(100);
+
+	for(int i=0; i<4; i++){
+		set_led(i, 1);
+	}
+	chThdSleepMilliseconds(100);
+	for(int i=0; i<4; i++){
+		set_led(i, 0);
+	}
+
+	palTogglePad(GPIOD, GPIOD_LED_FRONT);
+	chThdSleepMilliseconds(100);
+
+	palTogglePad(GPIOD, GPIOD_LED_FRONT);
+	chThdSleepMilliseconds(100);
+
+	for(int j=0; j<3; j++){
+
+		for(int i=0; i<4; i++){
+			toggle_rgb_led(i, j, LED_RGB_INTENSITY);
+		}
+		chThdSleepMilliseconds(100);
+
+		for(int i=0; i<4; i++){
+			toggle_rgb_led(i, j, LED_RGB_INTENSITY);
+		}
+		chThdSleepMilliseconds(100);
+		for(int i=0; i<4; i++){
+			set_led(i, 1);
+		}
+		chThdSleepMilliseconds(100);
+		for(int i=0; i<4; i++){
+			set_led(i, 0);
+		}
+	}
 }
 
-/*! \brief turn on/off the specified LED
- *
- * The e-puck has 8 red LEDs. With this function, you can
- * change the state of these LEDs.
- * \param led_number between 0 and 7
- * \param value 0 (off), 1 (on) otherwise change the state
- * \warning if led_number is other than 0-7, all leds are set
- * to the indicated value.
- */
-void LedSet_ALL(unsigned int led_number, unsigned int value)
-{
+void LedSet_ALL(unsigned int led_number, unsigned int value){
+
 	switch(led_number)
 	{
 		case 0:
@@ -73,7 +134,6 @@ void LedSet_ALL(unsigned int led_number, unsigned int value)
 		case 1: // Change only the red led of the RGB to have the same color as other "normal" leds.
 			if(value >= 2) {
 				toggle_red_led(LED2, LED_RGB_INTENSITY);
-//				palTogglePad(GPIOB, GPIOB_LED_BODY);
 			} else {
 				set_rgb_led(LED2, value*LED_RGB_INTENSITY, 0, 0);
 			}
@@ -115,3 +175,60 @@ void LedSet_ALL(unsigned int led_number, unsigned int value)
 			break;
 	}
 }
+
+void LedSet_intensity(unsigned int led_number, unsigned int value, int intensity){
+
+	switch(led_number)
+	{
+		case 0:
+			set_led(LED1, value);
+			break;
+		case 1: // Change only the red led of the RGB to have the same color as other "normal" leds.
+			if(value >= 2) {
+				toggle_red_led(LED2, intensity);
+			} else {
+				set_rgb_led(LED2, value*intensity, 0, 0);
+			}
+			break;
+		case 2:
+			set_led(LED3, value);
+			break;
+		case 3: // Change only the red led of the RGB to have the same color as other "normal" leds.
+			if(value >= 2) {
+				toggle_red_led(LED4, intensity);
+			} else {
+				set_rgb_led(LED4, value*intensity, 0, 0);
+			}
+			break;
+		case 4:
+			set_led(LED5, value);
+			break;
+		case 5: // Change only the red led of the RGB to have the same color as other "normal" leds.
+			if(value >= 2) {
+				toggle_red_led(LED6, intensity);
+			} else {
+				set_rgb_led(LED6, value*intensity, 0, 0);
+			}
+			break;
+		case 6:
+			set_led(LED7, value);
+			break;
+		case 7: // Change only the red led of the RGB to have the same color as other "normal" leds.
+			if(value >= 2) {
+				toggle_red_led(LED8, intensity);
+			} else {
+				set_rgb_led(LED8, value*intensity, 0, 0);
+			}
+			break;
+		default:
+			for(int i=0; i<8; i++) {
+				LedSet_ALL(i, value);
+			}
+			break;
+	}
+}
+
+
+
+
+

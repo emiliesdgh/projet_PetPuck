@@ -33,19 +33,19 @@ messagebus_t bus;
 MUTEX_DECL(bus_lock);
 CONDVAR_DECL(bus_condvar);
 
+//initialisations et démarrage des threads nécessaires pour proximity_sensor et obstacle_encounter
 void initial_proximity(void) {
     // TOF sensor
     VL53L0X_start();
     // Proximity sensors
-    messagebus_init( & bus, & bus_lock, & bus_condvar);
+    messagebus_init( & bus, & bus_lock, & bus_condvar);	//pas sur de ce que c'est ni si c'est nécessaire
     proximity_start();
     calibrate_ir();
     proximityToStop_start();
-    chThdSleepMilliseconds(500);
+    chThdSleepMilliseconds(500);	//pas sur de la nécessité
 }
 
 //céation/définition du threads obstacle encounter
-
 static THD_WORKING_AREA(waProximityToStop, 2048);
 static THD_FUNCTION(ProximityToStop, arg){
 
@@ -56,8 +56,7 @@ static THD_FUNCTION(ProximityToStop, arg){
 	while(1){
 		time = chVTGetSystemTime();
 
-		distance_prox = VL53L0X_get_dist_mm();	//le programme rentre ici mais la distance pour s'arrèter fonctionne pas
-    	palTogglePad(GPIOB, GPIOB_LED_BODY);
+		distance_prox = VL53L0X_get_dist_mm();
 
 		//fréquence de 100Hz
 		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
@@ -71,7 +70,9 @@ void proximityToStop_start(void){
 
 }
 
-
+// le thread modifie la variable de la distance en fonction des infos recu par le capteur de proximité
+//cette fonction permet de prendre cette valeur dans le thread obstacle_encounter pour tester si les
+//moteurs doivent s'arrèter ou pas en fonction de si y'a un obstacle ou pas
 uint16_t get_distance_toStop(void){
 	return distance_prox;
 }

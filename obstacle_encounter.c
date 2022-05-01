@@ -28,7 +28,7 @@
 
 static int16_t speed = 0;
 
-
+//fonction impliquant la condition de l'état des moteurs en fonction de si y'a un obstacle ou pas
 int16_t motors_speed(uint16_t distance){
 
 	if(distance > DISTANCE_MIN){
@@ -53,7 +53,6 @@ static THD_FUNCTION(ObstacleEncounter, arg){
     systime_t time;
 
     uint16_t distance_mm = 0;
-
 
 	while(1){
 		time = chVTGetSystemTime();
