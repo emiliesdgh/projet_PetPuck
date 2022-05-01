@@ -33,22 +33,32 @@ messagebus_t bus;
 MUTEX_DECL(bus_lock);
 CONDVAR_DECL(bus_condvar);
 
+void initial_proximity(void) {
+    // TOF sensor
+    VL53L0X_start();
+    // Proximity sensors
+    messagebus_init( & bus, & bus_lock, & bus_condvar);
+    proximity_start();
+    calibrate_ir();
+    proximityToStop_start();
+    chThdSleepMilliseconds(500);
+}
+
 //céation/définition du threads obstacle encounter
 
-static THD_WORKING_AREA(waProximityToStop, 256);
+static THD_WORKING_AREA(waProximityToStop, 2048);
 static THD_FUNCTION(ProximityToStop, arg){
 
 	chRegSetThreadName(__FUNCTION__);
 	(void)arg;
     systime_t time;
 
-	proximity_start();
+//	proximity_start();
 
 	while(1){
 		time = chVTGetSystemTime();
 
 		distance_prox = VL53L0X_get_dist_mm();
-
 
 
 		//fréquence de 100Hz

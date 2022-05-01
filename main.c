@@ -11,6 +11,7 @@
 #include <main.h>
 
 #include <spi_comm.h>	//pour utilier les leds rgb
+#include "sensors/proximity.h"
 
 #include <audio_processing.h>
 #include <fft.h>
@@ -70,11 +71,16 @@ int main(void)
 
 //
 	// thread start
-	ObstacleEncounter_start();	//encounter an obstacle
+	ObstacleEncounter_start();	//encounter an obstacle okkkk pas dans panic
 
 	motors_init();	//inits the motors
 
-	proximityToStop_start();
+	initial_proximity();
+
+//	proximity_start();	// vas  dans le mode panic mais jsp pkkkkkkk
+
+
+//	proximityToStop_start();
 //
 
     //starts timer 12
@@ -93,7 +99,7 @@ int main(void)
     do{
 
     	chThdSleepMilliseconds(1000);
-//      GoodMorning();
+      GoodMorning();
 //    	CircleLed();
     	palTogglePad(GPIOB, GPIOB_LED_BODY);
 

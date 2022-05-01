@@ -3,6 +3,7 @@
 
 //#include "main.h"
 
+void initial_proximity(void);
 
 void proximityToStop_start(void);
 
