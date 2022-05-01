@@ -10,7 +10,6 @@
 #include <camera/po8030.h>
 #include <chprintf.h>
 
-
 #include <main.h>
 
 #include <spi_comm.h>	//pour utilier les leds rgb
