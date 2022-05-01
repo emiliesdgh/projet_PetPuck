@@ -99,6 +99,7 @@ int main(void)
 //    	GoodNight();
 //    	chThdSleepMilliseconds(1000);
 //    	palTogglePad(GPIOB, GPIOB_LED_BODY);
+		//mic_start(&processAudioData);
 //
 //    }
     do{
