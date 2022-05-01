@@ -11,7 +11,7 @@ extern "C" {
 
 //define for obstacle encounter
 #define SPEED_MAX	1000
-#define	DISTANCE_MIN	10.0f
+#define	DISTANCE_MIN	100.0f
 
 /** Robot wide IPC bus. */
 extern messagebus_t bus;

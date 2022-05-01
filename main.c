@@ -101,7 +101,7 @@ int main(void)
     	chThdSleepMilliseconds(1000);
       GoodMorning();
 //    	CircleLed();
-    	palTogglePad(GPIOB, GPIOB_LED_BODY);
+//    	palTogglePad(GPIOB, GPIOB_LED_BODY);
 
 
 

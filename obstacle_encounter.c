@@ -26,37 +26,8 @@
 #include <obstacle_encounter.h>
 #include <proximity_sensor.h>
 
-
-
-//static uint16_t distance_mm = 0;
 static int16_t speed = 0;
-//distance_mm = get_distance();
 
-//proximity sensors
-
-
-
-
-//
-//
-////speeds
-//#define SPEED_TURN 700			//turning speed for 90° turns
-//#define SPEED_CORR 300			//speed correction for lateral obstacle avoidance
-//#define SPEED_END  210			//rotating speed for the color detection in FINISH mode
-//#define STOP       0			//stopped speed
-//
-////distances
-//#define DIST_OBSTACLE 10000000  //distance needed to pass through an obstacle
-//
-
-//
-//void left_motor_set_speed(int speed) {
-//    motor_set_speed(&left_motor, speed);
-//}
-//
-//void right_motor_set_speed(int speed) {
-//	motor_set_speed(&right_motor, speed);
-//}
 
 int16_t motors_speed(uint16_t distance){
 
@@ -74,7 +45,6 @@ int16_t motors_speed(uint16_t distance){
 }
 
 //céation/définition du threads obstacle encounter
-
 static THD_WORKING_AREA(waObstacleEncounter, 256);
 static THD_FUNCTION(ObstacleEncounter, arg){
 
@@ -87,8 +57,6 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 
 	while(1){
 		time = chVTGetSystemTime();
-
-//		distance_mm = kalman1d(VL53L0X_get_dist_mm());
 
 		//need function to modify the value of distance_mm which will be created in file proximity_sensor
 		distance_mm = get_distance_toStop();

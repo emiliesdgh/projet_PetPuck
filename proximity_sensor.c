@@ -53,13 +53,11 @@ static THD_FUNCTION(ProximityToStop, arg){
 	(void)arg;
     systime_t time;
 
-//	proximity_start();
-
 	while(1){
 		time = chVTGetSystemTime();
 
-		distance_prox = VL53L0X_get_dist_mm();
-
+		distance_prox = VL53L0X_get_dist_mm();	//le programme rentre ici mais la distance pour s'arrèter fonctionne pas
+    	palTogglePad(GPIOB, GPIOB_LED_BODY);
 
 		//fréquence de 100Hz
 		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
