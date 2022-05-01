@@ -6,6 +6,9 @@
 #include "ch.h"
 #include "hal.h"
 #include "memory_protection.h"
+#include <usbcfg.h>
+#include <camera/po8030.h>
+#include <chprintf.h>
 
 
 #include <main.h>
@@ -20,6 +23,8 @@
 #include <puck_led.h>
 #include <selector.h>
 #include <timer.h>
+#include <process_image.h>
+
 
 #include <obstacle_encounter.h>
 #include <proximity_sensor.h>
@@ -65,8 +70,15 @@ int main(void)
     mpu_init();
 
     serial_start();
-
+    //start usb communication
+    usb_start();
+	po8030_start();
+    //starts the camera
+    dcmi_start();
+    //
 	spi_comm_start();	//pour utilier les leds rgb
+
+	process_image_start();
 
 //
 	//threads start
@@ -83,26 +95,27 @@ int main(void)
 //    timer12_start();
 
 //
-    unsigned int a = 22;
+//    unsigned int a = 22;
 //    unsigned int b = 5;
 //    palSetPad(GPIOD, GPIOD_LED1);
-    LedClear();
+//    LedClear();
 //	palSetPad(GPIOD, GPIOD_LED1);
 //
-    GoodMorning();
+//    GoodMorning();
 //    GoodNight();
 
 //    palTogglePad(GPIOB, GPIOB_LED_BODY);
-//	set_led(2, 2);
-//	LedBlink();
+//	  set_led(2, 2);
+//	  LedBlink();
 //    while (1) {
 //    	GoodNight();
 //    	chThdSleepMilliseconds(1000);
 //    	palTogglePad(GPIOB, GPIOB_LED_BODY);
+
 		//mic_start(&processAudioData);
 //
 //    }
-    do{
+//    do{
 //
 //        GoodMorning();
 //
@@ -120,16 +133,16 @@ int main(void)
 
 //    	toggle_red_led(LED6, LED_RGB_INTENSITY);
 
-    	a = a - 1;
+//    	a = a - 1;
 
-    }while(a!=0);
+//    }while(a!=0);
 
 //    /* Infinite loop. */
-//    while (1) {
+    while (1) {
 //    	//waits 1 second
-//        chThdSleepMilliseconds(1000);
+        chThdSleepMilliseconds(1000);
 ////
-//    }
+    }
 
 }
 
