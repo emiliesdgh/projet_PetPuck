@@ -3,10 +3,13 @@
 #include <chprintf.h>
 #include <usbcfg.h>
 
+
 #include <main.h>
 #include <camera/po8030.h>
 
 #include <process_image.h>
+#include <puck_led.h>
+
 
 
 static float distance_cm = 0;
@@ -95,6 +98,8 @@ static BSEMAPHORE_DECL(image_ready_sem, TRUE);
 //}
 
 
+
+
 //gets ambient light average and compares it to DUSKDAWN
 void ambient_light(uint8_t *buffer) {
 	static uint8_t newday = 1;
@@ -106,12 +111,14 @@ void ambient_light(uint8_t *buffer) {
 	if (mean >= DUSK && newday) {
 		//call sayGM function
 		newday = 0;
-		palSetPad(GPIOB, GPIOB_LED_BODY);
+		GoodMorning();
+//		palSetPad(GPIOB, GPIOB_LED_BODY);
 	}
 	else if (mean < DAWN && !(newday)) {
 		//call sayGN function
 		newday = 1;
-		palClearPad(GPIOB, GPIOB_LED_BODY);
+		GoodNight();
+//		palClearPad(GPIOB, GPIOB_LED_BODY);
 	}
 }
 
