@@ -27,6 +27,7 @@
 
 #include <obstacle_encounter.h>
 #include <proximity_sensor.h>
+#include <danse_mode.h>
 
 
 #include <leds.h>
@@ -84,7 +85,7 @@ int main(void)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
 //	ObstacleEncounter_start();	//initialisation for the obstacle encounter thread
 
-//	motors_init();	//inits the motors
+	motors_init();	//inits the motors
 
 //	initial_proximity();	//initialisation for the proximity thread
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -100,8 +101,15 @@ int main(void)
 //    LedClear();
 //	palSetPad(GPIOD, GPIOD_LED1);
 //
-//    GoodMorning();
-//    GoodNight();
+	int16_t speed_main = 100;
+
+	 for(int i = 0; i<10; i++){
+		 if(i==8){
+			 speed_main=0;
+		 }
+		 danseMode(speed_main);
+	 }
+
 
 //    palTogglePad(GPIOB, GPIOB_LED_BODY);
 //	  set_led(2, 2);
