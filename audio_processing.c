@@ -58,16 +58,25 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 
 		nb_samples++;
 
+		mustSend++;
+		if (mustSend > 10) {
+			//signals to send the result to the computer
+			chBSemSignal(&sendToComputer_sem);
+			mustSend=0;
+		}
+
 		//stop when buffer is full
 		if(nb_samples >= (MICSAMPLESIZE)) {
 			int32_t Rstreamavg = get_micro_average(micRinput, MICSAMPLESIZE);
 			sumavgmicR += Rstreamavg;
 			threesec++;
-			//check for call function here??
+			//check for call function here?? problem:
+			//if music starts playing he'll think he's getting called before realising it's music?
+			//added (sumavgmicR/threesec) < NOMUSIC condition but im not sure it's properly functional
 			uint8_t call = 0;
 			call = check_for_call(micRinput, MICSAMPLESIZE, Rstreamavg);
 			nb_samples = 0; 	//to refill buffer later
-			if (call) {
+			if (call && ((sumavgmicR/threesec) < NOMUSIC)) {
 				palSetPad(GPIOB, GPIOB_LED_BODY); //follow_direction();
 			} else { palClearPad(GPIOB, GPIOB_LED_BODY); }
 			break;
@@ -83,10 +92,11 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 		nb_samples = 0;
 		if (avgmicR > NOMUSIC) { //instead of computing other avgs if music is playing, just start dancing
 			danseMode(100);
-			palClearPad(GPIOD, GPIOD_LED_FRONT);
+		}
+//			palClearPad(GPIOD, GPIOD_LED_FRONT);
 //		} else if (avgmicR <= NOMUSIC) {
 //			palSetPad(GPIOD, GPIOD_LED_FRONT);
-		}
+//		}
 	}
 			/*
 			 * here we do the data processing: calculate the avg (of the noise),
@@ -167,41 +177,17 @@ int32_t get_micro_average(float *micro_ID, uint16_t sample_size)
 	return ((int)(sum/sample_size));
 }
 
-void wait_send_to_computer(void){
+void wait_send_to_computer(void) {
 	chBSemWait(&sendToComputer_sem);
 }
 
-/*float* get_audio_buffer_ptr(BUFFER_NAME_t name){
-	if(name == LEFT_CMPLX_INPUT){
-		return micLeft_cmplx_input;
-	}
-	else if (name == RIGHT_CMPLX_INPUT){
-		return micRight_cmplx_input;
-	}
-	else if (name == FRONT_CMPLX_INPUT){
-		return micFront_cmplx_input;
-	}
-	else if (name == BACK_CMPLX_INPUT){
-		return micBack_cmplx_input;
-	}
-	else if (name == LEFT_OUTPUT){
-		return micLeft_output;
-	}
-	else if (name == RIGHT_OUTPUT){
-		return micRight_output;
-	}
-	else if (name == FRONT_OUTPUT){
-		return micFront_output;
-	}
-	else if (name == BACK_OUTPUT){
-		return micBack_output;
+float* get_audio_buffer_ptr(BUFFER_NAME_t name){ //to try and get PCM data
+	if(name == MIC_R_INPUT){
+		return micRinput;
 	}
 	else{
 		return NULL;
 	}
-}*/
+}
 
-/*void processAudioData(int16_t *data, uint16_t num_samples) {
-	//data_micro_1 = e_get_micro_last_values (0, data, num_samples);
 
-}*/

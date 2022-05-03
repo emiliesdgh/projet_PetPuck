@@ -77,9 +77,18 @@ int main(void)
     dcmi_start();
     //
 	spi_comm_start();	//pour utilier les leds rgb
+    static float send_tab[MICSAMPLESIZE];
+//	process_image_start();
+	mic_start(&processAudioData);
 
-	process_image_start();
-
+    while (1) { //trying to send the PCM data to the computer, need to edit python script?
+    			//so far, copied from TP5 files--NOTE: edited audio_processing.c and .h too
+    //waits until a result must be sent to the computer
+    wait_send_to_computer();
+    //we copy the buffer to avoid conflicts
+    arm_copy_f32(get_audio_buffer_ptr(MIC_R_INPUT), send_tab, MICSAMPLESIZE);
+    SendFloatToComputer((BaseSequentialStream *) &SD3, send_tab, MICSAMPLESIZE);
+    }
 //
 	//threads start
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -101,14 +110,14 @@ int main(void)
 //    LedClear();
 //	palSetPad(GPIOD, GPIOD_LED1);
 //
-	int16_t speed_main = 100;
-
-	 for(int i = 0; i<10; i++){
-		 if(i==8){
-			 speed_main=0;
-		 }
-		 danseMode(speed_main);
-	 }
+//	int16_t speed_main = 100;
+//
+//	 for(int i = 0; i<10; i++){
+//		 if(i==8){
+//			 speed_main=0;
+//		 }
+//		 danseMode(speed_main);
+//	 }
 
 
 //    palTogglePad(GPIOB, GPIOB_LED_BODY);
