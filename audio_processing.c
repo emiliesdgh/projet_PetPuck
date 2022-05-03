@@ -58,12 +58,14 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 
 		nb_samples++;
 
+	#ifdef TESTING
 		mustSend++;
 		if (mustSend > 10) {
 			//signals to send the result to the computer
 			chBSemSignal(&sendToComputer_sem);
 			mustSend=0;
 		}
+	#endif //TESTING
 
 		//stop when buffer is full
 		if(nb_samples >= (MICSAMPLESIZE)) {

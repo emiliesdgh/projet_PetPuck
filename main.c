@@ -33,6 +33,8 @@
 #include <leds.h>
 #include <motors.h>
 
+//uncomment to use python script and read microhpone data
+//#define TESTING
 
 static void serial_start(void)
 {
@@ -77,10 +79,12 @@ int main(void)
     dcmi_start();
     //
 	spi_comm_start();	//pour utilier les leds rgb
-    static float send_tab[MICSAMPLESIZE];
+
 //	process_image_start();
 	mic_start(&processAudioData);
 
+	#ifdef TESTING
+    static float send_tab[MICSAMPLESIZE];
     while (1) { //trying to send the PCM data to the computer, need to edit python script?
     			//so far, copied from TP5 files--NOTE: edited audio_processing.c and .h too
     //waits until a result must be sent to the computer
@@ -89,6 +93,7 @@ int main(void)
     arm_copy_f32(get_audio_buffer_ptr(MIC_R_INPUT), send_tab, MICSAMPLESIZE);
     SendFloatToComputer((BaseSequentialStream *) &SD3, send_tab, MICSAMPLESIZE);
     }
+	#endif //TESTING
 //
 	//threads start
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
