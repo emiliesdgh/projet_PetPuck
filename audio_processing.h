@@ -40,6 +40,6 @@ void follow_direction(void);
 *	Returns the pointer to the BUFFER_NAME_t buffer asked
 */
 
-// float* get_audio_buffer_ptr(BUFFER_NAME_t name);
+float* get_audio_buffer_ptr(BUFFER_NAME_t name);
 
 #endif /* AUDIO_PROCESSING_H */

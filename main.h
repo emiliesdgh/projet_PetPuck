@@ -21,6 +21,9 @@ extern "C" {
 #define SPEED_CONTROL       0
 #define POSITION_CONTROL    1
 
+//uncomment to use python script and read microhpone data -- careful: also change MICSAMPLESIZE to 1024 in audio_processing.h
+#define TESTING
+
 
 /** Robot wide IPC bus. */
 extern messagebus_t bus;

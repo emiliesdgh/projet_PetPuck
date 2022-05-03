@@ -33,8 +33,6 @@
 #include <leds.h>
 #include <motors.h>
 
-//uncomment to use python script and read microhpone data
-//#define TESTING
 
 static void serial_start(void)
 {
