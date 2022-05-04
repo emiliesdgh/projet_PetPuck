@@ -1,9 +1,10 @@
 #include "ch.h"
 #include "hal.h"
 #include "main.h"
-#include <puck_led.h>
 #include <leds.h>
 #include <spi_comm.h>
+
+#include <puck_led.h>
 
 //function to initialise the LED, put them all in state OFF
 void LedClear(void){
@@ -22,14 +23,12 @@ void GoodMorning(void){
 	for(int i=0; i<8; i++){
 
 		LedSet_ALL(i,1);
-
 		chThdSleepMilliseconds(100);
 	}
 
 	for(int i=0; i<8; i++){
 
 		LedSet_ALL(i,0);
-
 		chThdSleepMilliseconds(100);
 	}
 	for(int i=0; i<8; i++){
@@ -172,6 +171,8 @@ void Led_panic_mode(void){
 //
 //}
 
+//function that set all LEDs to  the value chosen (value = 0 : OFF, value = 1 : ON)
+//and puts the RGB LEDs on maximum intensity in red color
 void LedSet_ALL(unsigned int led_number, unsigned int value){
 
 	switch(led_number)
@@ -224,6 +225,8 @@ void LedSet_ALL(unsigned int led_number, unsigned int value){
 	}
 }
 
+//function that sets the red color of RGB LEDs depending on the wanted intensity
+//used for the GoodNight mode
 void LedSet_intensity(unsigned int led_number, unsigned int value, int intensity){
 
 	switch(led_number)

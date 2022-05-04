@@ -31,6 +31,8 @@
 //some static global variables
 static int16_t right_speed = 0;					// in [step/s]
 static int16_t left_speed = 0;					// in [step/s]
+
+//--->> varible non utilisées
 //static int16_t counter_step_right = 0;			// in [step]
 //static int16_t counter_step_left = 0;			// in [step]
 //static int16_t position_to_reach_right = 0; 	// in [step]

@@ -16,19 +16,22 @@
 #include "sensors/VL53L0X/VL53L0X.h"
 #include "sensors/proximity.h"
 
-#include <leds.h>
+//include  the files from the given library
 #include <spi_comm.h>
-
-#include <selector.h>
-#include <main.h>
+#include <leds.h>
 #include <motors.h>
 
-#include <obstacle_encounter.h>
+//#include <selector.h>
+//include our files
+#include <main.h>
 #include <proximity_sensor.h>
+
+#include <obstacle_encounter.h>
+
 
 static int16_t speed = 0;
 
-//fonction impliquant la condition de l'état des moteurs en fonction de si y'a un obstacle ou pas
+//function that checks the distance between the robot and a possible obstacle
 int16_t motors_speed(uint16_t distance){
 
 	if(distance > DISTANCE_MIN){
@@ -44,7 +47,7 @@ int16_t motors_speed(uint16_t distance){
 	return (int16_t)speed;
 }
 
-//céation/définition du threads obstacle encounter
+//initialization of the obstacle encounter thread
 static THD_WORKING_AREA(waObstacleEncounter, 256);
 static THD_FUNCTION(ObstacleEncounter, arg){
 
@@ -70,9 +73,9 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 	}
 }
 
+//function to start the obstacle encounter thread
 void ObstacleEncounter_start(void){
 
-    //création/ initialisation des threads dans la fonction main
-    chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO, ObstacleEncounter, NULL);
+	chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO, ObstacleEncounter, NULL);
 
 }

@@ -1,37 +1,48 @@
+// C standard header files
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
+// ChibiOS headers
 #include "ch.h"
 #include "hal.h"
 #include "memory_protection.h"
 #include <usbcfg.h>
-#include <camera/po8030.h>
 #include <chprintf.h>
 
-#include <main.h>
+#include <camera/po8030.h>
 
-#include <spi_comm.h>	//pour utilier les leds rgb
-#include "sensors/proximity.h"
 
+
+//include  the files from the given library
+#include <spi_comm.h>			//to be able to use the RGB LEDs
+#include "sensors/proximity.h"	//to be  able to use the proximity threads
+
+#include <leds.h>				//to use the different LED functions that exist already
+#include <motors.h>				//to use the different motor functions that exist already
+
+//to use the threads and functions so that the robot can play sounds and melodies
+#include <audio/audio_thread.h>
+#include <audio/play_melody.h>
+#include <audio/play_sound_file.h>	//to play specific sounds from the SD card
+
+//include our files
 #include <audio_processing.h>
 #include <fft.h>
 #include <communications.h>
-#include <gpio.h>
+#include <gpio.h>		//on utilise pas il me semble
 #include <puck_led.h>
-#include <selector.h>
-#include <timer.h>
+#include <selector.h>	//on utilise pas il me semble
+#include <timer.h>		//on utilise pas il me semble
 #include <process_image.h>
 
-
-#include <obstacle_encounter.h>
+#include <obstacle_encounter.h>	//--->>> to merge with danse_mode and proximity_sensors maybe
 #include <proximity_sensor.h>
 #include <danse_mode.h>
 
-
-#include <leds.h>
-#include <motors.h>
+//include the file .h for the main
+#include <main.h>
 
 
 static void serial_start(void)
@@ -69,37 +80,42 @@ int main(void)
     chSysInit();
     mpu_init();
 
+    //start the serial communication
     serial_start();
-    //start usb communication
+    //start the USB communication
     usb_start();
-	po8030_start();
-    //starts the camera
-    dcmi_start();
-    //
-	spi_comm_start();	//pour utilier les leds rgb
-
+    //start the camera
+//	po8030_start();
+//  dcmi_start();
+    //start the audio
+    dac_start();
+    //start the RGB LEDs
+	spi_comm_start();
+	//start the image processing ??
 //	process_image_start();
-	mic_start(&processAudioData);
-
-	#ifdef TESTING
-    static float send_tab[MICSAMPLESIZE];
-    while (1) { //trying to send the PCM data to the computer, need to edit python script?
-    			//so far, copied from TP5 files--NOTE: edited audio_processing.c and .h too
-    //waits until a result must be sent to the computer
-    wait_send_to_computer();
-    //we copy the buffer to avoid conflicts
-    arm_copy_f32(get_audio_buffer_ptr(MIC_R_INPUT), send_tab, MICSAMPLESIZE);
-    SendFloatToComputer((BaseSequentialStream *) &SD3, send_tab, MICSAMPLESIZE);
-    }
-	#endif //TESTING
+	//start the mic audio processing  ?
+//	mic_start(&processAudioData);
+//
+//	#ifdef TESTING
+//    static float send_tab[MICSAMPLESIZE];
+//    while (1) { //trying to send the PCM data to the computer, need to edit python script?
+//    			//so far, copied from TP5 files--NOTE: edited audio_processing.c and .h too
+//    //waits until a result must be sent to the computer
+//    wait_send_to_computer();
+//    //we copy the buffer to avoid conflicts
+//    arm_copy_f32(get_audio_buffer_ptr(MIC_R_INPUT), send_tab, MICSAMPLESIZE);
+//    SendF loatToComputer((BaseSequentialStream *) &SD3, send_tab, MICSAMPLESIZE);
+//    }
+//	#endif //TESTING
 //
 	//threads start
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
-//	ObstacleEncounter_start();	//initialisation for the obstacle encounter thread
+//	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
 
-	motors_init();	//inits the motors
+	motors_init();				//initialization of the motors
 
-//	initial_proximity();	//initialisation for the proximity thread
+//	initial_proximity();		//initialization for the proximity thread
+	playMelodyStart();			//initialization for the melody thread
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
 //
 
@@ -121,6 +137,21 @@ int main(void)
 //		 }
 //		 danseMode(speed_main);
 //	 }
+//
+//	 for(int i = 0; i<10; i++){
+//
+//		 danseMode_sansArgument();
+//	 }
+	    	GoodNight();
+
+	while(1){
+
+//		danseMode(speed_main);
+
+//		dancing_puck();
+//		Led_dance_mode();
+
+	}
 
 
 //    palTogglePad(GPIOB, GPIOB_LED_BODY);
