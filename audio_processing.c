@@ -93,7 +93,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 		threesec = 0;
 		nb_samples = 0;
 		if (avgmicR > NOMUSIC) { //instead of computing other avgs if music is playing, just start dancing
-			danseMode(100);
+			dancing_puck();
 		}
 //			palClearPad(GPIOD, GPIOD_LED_FRONT);
 //		} else if (avgmicR <= NOMUSIC) {
