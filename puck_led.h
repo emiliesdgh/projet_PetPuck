@@ -17,6 +17,7 @@ void LedClear(void);
 void GoodMorning(void);
 void GoodNight(void);
 void Led_panic_mode(void);
+//void Led_dance_mode(void);
 
 void LedSet_ALL(unsigned int led_number, unsigned int value);
 void LedSet_intensity(unsigned int led_number, unsigned int value, int intensity);
