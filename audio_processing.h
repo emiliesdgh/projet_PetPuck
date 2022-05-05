@@ -3,9 +3,9 @@
 
 
 #define FFT_SIZE 	1024
-#define MICSAMPLESIZE	1024 //to put: 160
+#define MICSAMPLESIZE	1024 //1024 //1600
 #define CORRELATIONSAMPLESIZE 	(2*MICSAMPLESIZE-1)
-#define NOMUSIC		15
+#define NOMUSIC		25
 
 typedef enum { //this is to try and get PCM data
 	//2 times FFT_SIZE because these arrays contain complex numbers (real + imaginary)

@@ -47,6 +47,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 	static uint16_t mustSend = 0;
 	static uint16_t threesec = 0;
 	static int32_t sumavgmicR = 0;
+	int32_t Rstreamavg = 0;
 
 	//loop to fill the buffers
 	for(uint16_t i = 0 ; i < num_samples ; i+=4) {
@@ -60,7 +61,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 
 	#ifdef TESTING
 		mustSend++;
-		if (mustSend > 10) {
+		if (mustSend > 20) {
 			//signals to send the result to the computer
 			chBSemSignal(&sendToComputer_sem);
 			mustSend=0;
@@ -69,21 +70,24 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 
 		//stop when buffer is full
 		if(nb_samples >= (MICSAMPLESIZE)) {
-			int32_t Rstreamavg = get_micro_average(micRinput, MICSAMPLESIZE);
+			Rstreamavg = get_micro_average(micRinput, MICSAMPLESIZE);
 			sumavgmicR += Rstreamavg;
 			threesec++;
-			//check for call function here?? problem:
-			//if music starts playing he'll think he's getting called before realising it's music?
-			//added (sumavgmicR/threesec) < NOMUSIC condition but im not sure it's properly functional
-			uint8_t call = 0;
-			call = check_for_call(micRinput, MICSAMPLESIZE, Rstreamavg);
 			nb_samples = 0; 	//to refill buffer later
-			if (call && ((sumavgmicR/threesec) < NOMUSIC)) {
-				palSetPad(GPIOB, GPIOB_LED_BODY); //follow_direction();
-			} else { palClearPad(GPIOB, GPIOB_LED_BODY); }
 			break;
 		}
 	}
+
+	//check for call function here?? problem:
+	//if music starts playing he'll think he's getting called before realising it's music?
+	//added (sumavgmicR/threesec) < NOMUSIC condition but im not sure it's properly functional
+	uint8_t call = 0;
+	call = check_for_call(micRinput, MICSAMPLESIZE, Rstreamavg);
+	if (call) { // && ((sumavgmicR/threesec) < NOMUSIC)) {
+		palSetPad(GPIOB, GPIOB_LED_BODY); //follow_direction();
+		call = 0;
+	} else if (!call) { palClearPad(GPIOB, GPIOB_LED_BODY); }
+
 
 	if (threesec == 299 ) {  //once we have 3 sec worth of data, we check if the noise avg is above a certain level
 							 //in the case that it is, we know that music is playing (or ppl are being too loud?)
@@ -157,11 +161,11 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 
 uint8_t check_for_call(float *data, uint16_t num_samples, int32_t stream_avg) {
 	uint8_t hereboy = 0;
-	int32_t signalR_max = stream_avg + 100;
-	int32_t signalR_min = stream_avg - 100;
+	int32_t signalR_max = stream_avg + 200; //value to add? idk
+	int32_t signalR_min = stream_avg - 200;
 	//float signalR_min = stream_avg * 0.10;
 		for (uint32_t i = 0; i < num_samples; i++) {
-			hereboy = !((data[i] < signalR_max) && (data[i]>signalR_min));
+			hereboy = !((data[i] < signalR_max) && (data[i] > signalR_min));
 		}
 	return hereboy;
 }
