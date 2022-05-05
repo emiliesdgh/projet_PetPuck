@@ -16,14 +16,17 @@
 #include "sensors/VL53L0X/VL53L0X.h"
 #include "sensors/proximity.h"
 
+//include  the files from the given library
 #include <leds.h>
 #include <spi_comm.h>
-
-#include <selector.h>
-#include <main.h>
 #include <motors.h>
 
+//#include <selector.h>
+
+//include our files
+#include <main.h>
 #include <obstacle_encounter.h>
+
 #include <proximity_sensor.h>
 
 
@@ -33,7 +36,7 @@ messagebus_t bus;
 MUTEX_DECL(bus_lock);
 CONDVAR_DECL(bus_condvar);
 
-//initialisations et démarrage des threads nécessaires pour proximity_sensor et obstacle_encounter
+//function to start proximity and obstacle encounter threads -> to be called in the main
 void initial_proximity(void) {
     // TOF sensor
     VL53L0X_start();
@@ -45,7 +48,7 @@ void initial_proximity(void) {
     chThdSleepMilliseconds(500);	//pas sur de la nécessité
 }
 
-//céation/définition du threads obstacle encounter
+//initialization of the proximity thread
 static THD_WORKING_AREA(waProximityToStop, 2048);
 static THD_FUNCTION(ProximityToStop, arg){
 
@@ -63,16 +66,15 @@ static THD_FUNCTION(ProximityToStop, arg){
 	}
 }
 
+//function to start the obstacle encounter thread
 void proximityToStop_start(void){
 
-    //création/ initialisation des threads dans la fonction main
     chThdCreateStatic(waProximityToStop, sizeof(waProximityToStop), NORMALPRIO, ProximityToStop, NULL);
 
 }
 
-// le thread modifie la variable de la distance en fonction des infos recu par le capteur de proximité
-//cette fonction permet de prendre cette valeur dans le thread obstacle_encounter pour tester si les
-//moteurs doivent s'arrèter ou pas en fonction de si y'a un obstacle ou pas
+//function to get the distance between the robot and a possible obstacle
+//sent to function that checks this distance in file obtacle_encounter.c
 uint16_t get_distance_toStop(void){
 	return distance_prox;
 }

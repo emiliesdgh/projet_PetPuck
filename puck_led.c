@@ -1,9 +1,10 @@
 #include "ch.h"
 #include "hal.h"
 #include "main.h"
-#include <puck_led.h>
 #include <leds.h>
 #include <spi_comm.h>
+
+#include <puck_led.h>
 
 //function to initialise the LED, put them all in state OFF
 void LedClear(void){
@@ -22,14 +23,12 @@ void GoodMorning(void){
 	for(int i=0; i<8; i++){
 
 		LedSet_ALL(i,1);
-
 		chThdSleepMilliseconds(100);
 	}
 
 	for(int i=0; i<8; i++){
 
 		LedSet_ALL(i,0);
-
 		chThdSleepMilliseconds(100);
 	}
 	for(int i=0; i<8; i++){
@@ -53,21 +52,37 @@ void GoodNight(void){
 
 	int led_intensity = LED_RGB_INTENSITY;
 	int led_value =  1;
+	for(int j = 0 ; j<4; j++){
 
+		set_led(j,1);
+	}
 	do{
 
-		for(int i=0; i<8; i++){
+		for(int i=0; i<4; i++){
 
 			LedSet_intensity(i, led_value, led_intensity);
 		}
 
-		led_intensity = led_intensity - 5;
+		led_intensity = led_intensity - 1;
 
-		if(led_intensity == 5){
+		if(led_intensity == 2){
 
 			led_value = 0;
 		}
-    	chThdSleepMilliseconds(500);
+		if(led_intensity == 80){
+			set_led(0,0);
+		}
+		if(led_intensity == 60){
+			set_led(1,0);
+		}
+		if(led_intensity == 40){
+			set_led(2,0);
+		}
+		if(led_intensity == 20){
+			set_led(3,0);
+		}
+//    	chThdSleepMilliseconds(100);
+		chThdSleepMilliseconds(50);
 
 	}while(led_intensity !=  0);
 
@@ -124,7 +139,40 @@ void Led_panic_mode(void){
 		}
 	}
 }
+//--->>> directly build in the dancing function
+////function to be called when robot is dancing
+//// avec les sleep, y'a trop de temps d'attente et il danse  pas très bien
+//void Led_dance_mode(void){
+//
+//	for(int j=0; j<4; j++){
+//
+//		set_led(j, 0);
+//
+//		for(int i=0; i<3; i++){
+//			toggle_rgb_led(j, i, LED_RGB_INTENSITY);
+//
+//
+//		}
+//		chThdSleepMilliseconds(100);
+//		set_led(j, 1);
+//
+//		for(int i=0; i<3; i++){
+//			toggle_rgb_led(j, i, LED_RGB_INTENSITY);
+//
+//			//set_led(i, 1);
+//		}
+//		chThdSleepMilliseconds(100);
+//
+////		for(int i=0; i<4; i++){
+////			set_led(i, 1);
+////		}
+//	}
+//
+//
+//}
 
+//function that set all LEDs to  the value chosen (value = 0 : OFF, value = 1 : ON)
+//and puts the RGB LEDs on maximum intensity in red color
 void LedSet_ALL(unsigned int led_number, unsigned int value){
 
 	switch(led_number)
@@ -177,44 +225,34 @@ void LedSet_ALL(unsigned int led_number, unsigned int value){
 	}
 }
 
+//function that sets the red color of RGB LEDs depending on the wanted intensity
+//used for the GoodNight mode
 void LedSet_intensity(unsigned int led_number, unsigned int value, int intensity){
 
 	switch(led_number)
 	{
-		case 0:
-			set_led(LED1, value);
-			break;
-		case 1: // Change only the red led of the RGB to have the same color as other "normal" leds.
+		case 0: // Change only the red led of the RGB to have the same color as other "normal" leds.
 			if(value >= 2) {
 				toggle_red_led(LED2, intensity);
 			} else {
 				set_rgb_led(LED2, value*intensity, 0, 0);
 			}
 			break;
-		case 2:
-			set_led(LED3, value);
-			break;
-		case 3: // Change only the red led of the RGB to have the same color as other "normal" leds.
+		case 1: // Change only the red led of the RGB to have the same color as other "normal" leds.
 			if(value >= 2) {
 				toggle_red_led(LED4, intensity);
 			} else {
 				set_rgb_led(LED4, value*intensity, 0, 0);
 			}
 			break;
-		case 4:
-			set_led(LED5, value);
-			break;
-		case 5: // Change only the red led of the RGB to have the same color as other "normal" leds.
+		case 2: // Change only the red led of the RGB to have the same color as other "normal" leds.
 			if(value >= 2) {
 				toggle_red_led(LED6, intensity);
 			} else {
 				set_rgb_led(LED6, value*intensity, 0, 0);
 			}
 			break;
-		case 6:
-			set_led(LED7, value);
-			break;
-		case 7: // Change only the red led of the RGB to have the same color as other "normal" leds.
+		case 3: // Change only the red led of the RGB to have the same color as other "normal" leds.
 			if(value >= 2) {
 				toggle_red_led(LED8, intensity);
 			} else {
