@@ -40,8 +40,10 @@ CONDVAR_DECL(bus_condvar);
 void initial_proximity(void) {
     // TOF sensor
     VL53L0X_start();
-    // Proximity sensors
+
+    // inits the Inter Process Communication bus.
     messagebus_init( & bus, & bus_lock, & bus_condvar);	//pas sur de ce que c'est ni si c'est nécessaire
+    // Proximity sensors
     proximity_start();
     calibrate_ir();
     proximityToStop_start();

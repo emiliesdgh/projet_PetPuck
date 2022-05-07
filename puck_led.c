@@ -15,6 +15,7 @@ void LedClear(void){
 	palClearPad(GPIOB, GPIOB_LED_BODY);
 }
 
+
 //function to be called when thread GoodMorning detects that it's morning
 void GoodMorning(void){
 
@@ -90,6 +91,8 @@ void GoodNight(void){
 //function to be called when thread panic detects panic mode
 void Led_panic_mode(void){
 
+	LedClear();
+
 	for(int i=0; i<4; i++){
 		set_led(i, 1);
 	}
@@ -138,6 +141,28 @@ void Led_panic_mode(void){
 			set_led(i, 0);
 		}
 	}
+}
+
+void Led_uhOh(void){
+
+	for(int i=0; i<8; i++){
+
+		LedSet_ALL(i,1);
+	}
+	palTogglePad(GPIOD, GPIOD_LED_FRONT);
+
+	palTogglePad(GPIOB, GPIOB_LED_BODY);
+
+	chThdSleepMilliseconds(250);
+
+	for(int i=0; i<8; i++){
+
+		LedSet_ALL(i,0);
+	}
+	palTogglePad(GPIOD, GPIOD_LED_FRONT);
+
+	palTogglePad(GPIOB, GPIOB_LED_BODY);
+
 }
 //--->>> directly build in the dancing function
 ////function to be called when robot is dancing

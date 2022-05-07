@@ -21,6 +21,12 @@
 
 #include <leds.h>				//to use the different LED functions that exist already
 #include <motors.h>				//to use the different motor functions that exist already
+//for the  panic mode : gyroscope + accéléromètre
+//#include <angles.h>
+#include <sensors/imu.h>
+#include <msgbus/messagebus.h>
+#include <i2c_bus.h>
+
 
 //to use the threads and functions so that the robot can play sounds and melodies
 #include <audio/audio_thread.h>
@@ -40,10 +46,18 @@
 #include <obstacle_encounter.h>	//--->>> to merge with danse_mode and proximity_sensors maybe
 #include <proximity_sensor.h>
 #include <danse_mode.h>
+#include <panic_mode.h>
 
 //include the file .h for the main
 #include <main.h>
 
+
+void SendUint8ToComputer(uint8_t* data, uint16_t size)
+{
+	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
+	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)&size, sizeof(uint16_t));
+	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)data, size);
+}
 
 static void serial_start(void)
 {
@@ -56,6 +70,10 @@ static void serial_start(void)
 
 	sdStart(&SD3, &ser_cfg); // UART3.
 }
+//TO BE INCLUDES IN MAIN.C ????
+//messagebus_t bus;
+//MUTEX_DECL(bus_lock);
+//CONDVAR_DECL(bus_condvar);
 
 //static void timer12_start(void){
 //    //General Purpose Timer configuration
@@ -73,7 +91,7 @@ static void serial_start(void)
 //    gptStartContinuous(&GPTD12, 0xFFFF);
 //}
 
-int main(void)
+int main(void)		//clear all leds at the beggining
 {
 
     halInit();
@@ -91,6 +109,13 @@ int main(void)
     dac_start();
     //start the RGB LEDs
 	spi_comm_start();
+	initial_proximity();		//initialization for the proximity thread
+
+
+    // inits the I2C communication
+    i2c_start();
+
+	imu_start();
 	//start the image processing ??
 //	process_image_start();
 	//start the mic audio processing  ?
@@ -110,14 +135,24 @@ int main(void)
 //
 	//threads start
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
+	playMelodyStart();			//initialization for the melody thread
+
 //	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
 
 	motors_init();				//initialization of the motors
 
-//	initial_proximity();		//initialization for the proximity thread
-	playMelodyStart();			//initialization for the melody thread
+
+
+
+	// starts the calibration of the sensors
+    calibrate_gyro();
+    calibrate_acc();
+//	playMelodyStart();			//initialization for the melody thread
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
 //
+//    led_test_start();
+	PanicMode_start();
+
 
     //starts timer 12
 //    timer12_start();
@@ -142,12 +177,22 @@ int main(void)
 //
 //		 danseMode_sansArgument();
 //	 }
-	    	GoodNight();
+//	GoodMorning();
+//	chThdSleepMilliseconds(1000);
+//
+//	GoodNight();
+//	chThdSleepMilliseconds(1000);
+//
+//	Led_panic_mode();
+//	chThdSleepMilliseconds(1000);
+
+//	Led_uhOh();
+
 
 	while(1){
-
+//		dancing_puck();
 //		danseMode(speed_main);
-
+//		test_main_panic();
 //		dancing_puck();
 //		Led_dance_mode();
 
@@ -193,6 +238,8 @@ int main(void)
         chThdSleepMilliseconds(1000);
 ////
     }
+
+
 
 }
 

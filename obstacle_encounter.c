@@ -21,15 +21,20 @@
 #include <leds.h>
 #include <motors.h>
 
+#include <audio/audio_thread.h>
+#include <audio/play_melody.h>
+
 //#include <selector.h>
 //include our files
 #include <main.h>
 #include <proximity_sensor.h>
+#include <puck_led.h>
 
 #include <obstacle_encounter.h>
 
 
 static int16_t speed = 0;
+static int led_flag_uhOh = 0; //led_flag
 
 //function that checks the distance between the robot and a possible obstacle
 int16_t motors_speed(uint16_t distance){
@@ -37,9 +42,10 @@ int16_t motors_speed(uint16_t distance){
 	if(distance > DISTANCE_MIN){
 
 		speed = SPEED_MAX;
+		led_flag_uhOh = 0;
 	}
 	else{
-
+		led_flag_uhOh += 1;
 		speed = 0;
 		//call 'uh-oh'
 	}
@@ -67,6 +73,12 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 
 		left_motor_set_speed(speed);
 		right_motor_set_speed(speed);
+
+		if(led_flag_uhOh == 1){
+			playNote(NOTE_G4, 100);
+			Led_uhOh();
+			playNote(NOTE_E4, 100);
+		}
 
 		//fréquence de 100Hz
 		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
