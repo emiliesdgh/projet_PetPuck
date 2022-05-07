@@ -35,7 +35,9 @@
 
 #include <panic_mode.h>
 
-
+//l'axe Z est l'axe en direction de  devant
+//l'axe Y est l'axe en direction de coté
+//l'axe X est l'axe en direction
 
 
 imu_msg_t imu_values;
@@ -51,17 +53,11 @@ static THD_FUNCTION(PanicMode, arg)
 	systime_t time;
 	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus, "/imu");
 
-	//******TP3********
 	//threshold value to not use the leds when the robot is too horizontal
 	float threshold_accel = 2.0;
-	float threshold_gyro = 0.2;
 
 	//create a pointer to the array for shorter name
 	float *accel = imu_values.acceleration;
-
-	float *gyro = imu_values.gyro_rate;
-	//*****************
-	float init_gyro = get_gyro_rate(X_AXIS);
 
 	while(1)
 	{
@@ -72,56 +68,19 @@ static THD_FUNCTION(PanicMode, arg)
 
         if(fabs(accel[X_AXIS]) > threshold_accel || fabs(accel[Y_AXIS]) > threshold_accel){
 
-//        	palSetPad(GPIOD, GPIOD_LED_FRONT);
         	led_flag_panic = 1;
+//        	dac_play(NOTE_CS7); //-->>> bonne note mais pas pour  les tests lol
+        	dac_play(NOTE_CS3);
 
         }else{
 
-//        	palClearPad(GPIOD, GPIOD_LED_FRONT);
         	led_flag_panic = 0;
+        	dac_stop();
         }
         if(led_flag_panic == 1){
+
         	Led_panic_mode();
         }
-//        if(fabs(gyro[X_AXIS]) > threshold_gyro || fabs(gyro[Y_AXIS]) > threshold_gyro){
-//
-//        	palSetPad(GPIOB, GPIOB_LED_BODY);
-//
-//        }else{
-//
-//        	palClearPad(GPIOB, GPIOB_LED_BODY);
-//        }
-
-
-//        if (abs( get_gyro_rate(X_AXIS) - init_gyro)  > ANGULAR_ACC_DEATH )
-//        {
-//        	led_flag_panic = 1;
-//        }
-
-//l'axe Z est l'axe en direction de  devant
-//l'axe Y est l'axe en direction de coté
-//l'axe X est l'axe en direction
-////       if( get_acceleration(X_AXIS) !=0){
-//       if( get_acceleration(X_AXIS) > ANGULAR_ACC_DEATH){
-//
-//    	   palTogglePad(GPIOD, GPIOD_LED_FRONT);
-//
-//    	   led_flag_panic = 1;
-//       }
-//
-//
-////        if (get_gyro_rate(X_AXIS) != 0 )
-////                {
-////                	led_flag_panic = 1;
-////        }
-//       else if(get_acceleration(X_AXIS) < ANGULAR_ACC_DEATH){
-//
-//        	led_flag_panic = 0;
-//        	palTogglePad(GPIOB, GPIOB_LED_BODY);
-//        }
-//        if(led_flag_panic == 1){
-//        	Led_panic_mode();
-//        }
 	}
     //100Hz
     chThdSleepUntilWindowed(time, time + MS2ST(10));
