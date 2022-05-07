@@ -37,14 +37,11 @@
 #include <audio_processing.h>
 #include <fft.h>
 #include <communications.h>
-#include <gpio.h>		//on utilise pas il me semble
 #include <puck_led.h>
-#include <selector.h>	//on utilise pas il me semble
-#include <timer.h>		//on utilise pas il me semble
 #include <process_image.h>
 
 #include <obstacle_encounter.h>	//--->>> to merge with danse_mode and proximity_sensors maybe
-#include <proximity_sensor.h>
+//#include <proximity_sensor.h> -->> will delete  this file
 #include <danse_mode.h>
 #include <panic_mode.h>
 
@@ -103,21 +100,21 @@ int main(void)		//clear all leds at the beggining
     //start the USB communication
     usb_start();
     //start the camera
-//	po8030_start();
-//  dcmi_start();
+	po8030_start();
+	dcmi_start();
     //start the audio
     dac_start();
     //start the RGB LEDs
 	spi_comm_start();
 	initial_proximity();		//initialization for the proximity thread
-
+	//ATTENTION A L'ORDRE DES APPELS DE  CES FONCTIONS !!
 
     // inits the I2C communication
     i2c_start();
 
 	imu_start();
 	//start the image processing ??
-//	process_image_start();
+	process_image_start();
 	//start the mic audio processing  ?
 //	mic_start(&processAudioData);
 //
@@ -137,7 +134,7 @@ int main(void)		//clear all leds at the beggining
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
 	playMelodyStart();			//initialization for the melody thread
 
-//	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
+	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
 
 	motors_init();				//initialization of the motors
 
@@ -147,15 +144,12 @@ int main(void)		//clear all leds at the beggining
 	// starts the calibration of the sensors
     calibrate_gyro();
     calibrate_acc();
-//	playMelodyStart();			//initialization for the melody thread
-	//%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%
 //
-//    led_test_start();
 	PanicMode_start();
 
 
-    //starts timer 12
-//    timer12_start();
 
 //
 //    unsigned int a = 22;

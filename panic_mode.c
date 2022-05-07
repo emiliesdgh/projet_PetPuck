@@ -29,7 +29,7 @@
 //#include <selector.h>
 //include our files
 #include <main.h>
-#include <proximity_sensor.h>
+#include <obstacle_encounter.h>
 #include <puck_led.h>
 
 
@@ -71,7 +71,7 @@ static THD_FUNCTION(PanicMode, arg)
 
         	led_flag_panic = 1;
 //        	dac_play(NOTE_CS7); //-->>> bonne note mais pas pour  les tests lol
-        	dac_play(NOTE_CS3);
+//        	dac_play(NOTE_CS3);
 
         }else{
 
@@ -79,7 +79,7 @@ static THD_FUNCTION(PanicMode, arg)
         	dac_stop();
         }
         if(led_flag_panic == 1){
-
+//        	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol
         	Led_panic_mode();
         }
 	}

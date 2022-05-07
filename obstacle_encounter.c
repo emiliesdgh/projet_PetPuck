@@ -27,7 +27,7 @@
 //#include <selector.h>
 //include our files
 #include <main.h>
-#include <proximity_sensor.h>
+//#include <proximity_sensor.h> -->> will delete  this file
 #include <puck_led.h>
 
 #include <obstacle_encounter.h>
@@ -35,6 +35,59 @@
 
 static int16_t speed = 0;
 static int led_flag_uhOh = 0; //led_flag
+
+static uint16_t distance_prox = 0;
+//*********PROXIMITY + DISTANCE TO STOP THREAD***********
+messagebus_t bus;
+MUTEX_DECL(bus_lock);
+CONDVAR_DECL(bus_condvar);
+
+//function to start proximity and obstacle encounter threads -> to be called in the main
+void initial_proximity(void) {
+    // TOF sensor
+    VL53L0X_start();
+
+    // inits the Inter Process Communication bus.
+    messagebus_init( & bus, & bus_lock, & bus_condvar);	//pas sur de ce que c'est ni si c'est nécessaire
+    // Proximity sensors
+    proximity_start();
+    calibrate_ir();
+    proximityToStop_start();
+    chThdSleepMilliseconds(500);	//pas sur de la nécessité
+}
+
+//initialization of the proximity thread
+static THD_WORKING_AREA(waProximityToStop, 2048);
+static THD_FUNCTION(ProximityToStop, arg){
+
+	chRegSetThreadName(__FUNCTION__);
+	(void)arg;
+    systime_t time;
+
+	while(1){
+		time = chVTGetSystemTime();
+
+		distance_prox = VL53L0X_get_dist_mm();
+
+		//fréquence de 100Hz
+		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
+	}
+}
+
+//function to start the obstacle encounter thread
+void proximityToStop_start(void){
+
+    chThdCreateStatic(waProximityToStop, sizeof(waProximityToStop), NORMALPRIO, ProximityToStop, NULL);
+
+}
+
+//function to get the distance between the robot and a possible obstacle
+//sent to function that checks this distance in file obtacle_encounter.c
+uint16_t get_distance_toStop(void){
+	return distance_prox;
+}
+
+//*********OBSTACLE ENCOUNTER THREAD***********
 
 //function that checks the distance between the robot and a possible obstacle
 int16_t motors_speed(uint16_t distance){

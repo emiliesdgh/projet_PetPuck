@@ -83,7 +83,7 @@ void GoodNight(void){
 			set_led(3,0);
 		}
 //    	chThdSleepMilliseconds(100);
-		chThdSleepMilliseconds(50);
+		chThdSleepMilliseconds(30);
 
 	}while(led_intensity !=  0);
 
@@ -96,47 +96,47 @@ void Led_panic_mode(void){
 	for(int i=0; i<4; i++){
 		set_led(i, 1);
 	}
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 	for(int i=0; i<4; i++){
 		set_led(i, 0);
 	}
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 
 	palTogglePad(GPIOB, GPIOB_LED_BODY);
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 
 	palTogglePad(GPIOB, GPIOB_LED_BODY);
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 
 	for(int i=0; i<4; i++){
 		set_led(i, 1);
 	}
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 	for(int i=0; i<4; i++){
 		set_led(i, 0);
 	}
 
 	palTogglePad(GPIOD, GPIOD_LED_FRONT);
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 
 	palTogglePad(GPIOD, GPIOD_LED_FRONT);
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 
 	for(int j=0; j<3; j++){
 
 		for(int i=0; i<4; i++){
 			toggle_rgb_led(i, j, LED_RGB_INTENSITY);
 		}
-		chThdSleepMilliseconds(100);
+		chThdSleepMilliseconds(80);
 
 		for(int i=0; i<4; i++){
 			toggle_rgb_led(i, j, LED_RGB_INTENSITY);
 		}
-		chThdSleepMilliseconds(100);
+		chThdSleepMilliseconds(80);
 		for(int i=0; i<4; i++){
 			set_led(i, 1);
 		}
-		chThdSleepMilliseconds(100);
+		chThdSleepMilliseconds(80);
 		for(int i=0; i<4; i++){
 			set_led(i, 0);
 		}
