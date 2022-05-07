@@ -15,10 +15,8 @@ CSRC += ./main.c \
 		./communications.c \
 		./fft.c \
 		./puck_led.c \
-		./gpio.c \
 		./process_image.c \
 		./obstacle_encounter.c \
-		./proximity_sensor.c \
 		./danse_mode.c \
 		./panic_mode.c \
 
