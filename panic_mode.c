@@ -64,9 +64,10 @@ static THD_FUNCTION(PanicMode, arg)
 		time = chVTGetSystemTime();
         //wait for new measures to be published
         messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
-        stopCurrentMelody();
 
-        if(fabs(accel[X_AXIS]) > threshold_accel || fabs(accel[Y_AXIS]) > threshold_accel){
+//        if(fabs(accel[X_AXIS]) > threshold_accel || fabs(accel[Y_AXIS]) > threshold_accel){
+
+        if(fabs(accel[X_AXIS]) > threshold_accel){
 
         	led_flag_panic = 1;
 //        	dac_play(NOTE_CS7); //-->>> bonne note mais pas pour  les tests lol

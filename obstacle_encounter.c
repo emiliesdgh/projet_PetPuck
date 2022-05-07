@@ -75,9 +75,9 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 		right_motor_set_speed(speed);
 
 		if(led_flag_uhOh == 1){
-			playNote(NOTE_G4, 100);
+			playNote(NOTE_G4, 120);
 			Led_uhOh();
-			playNote(NOTE_E4, 100);
+			playNote(NOTE_E4, 120);
 		}
 
 		//fréquence de 100Hz
