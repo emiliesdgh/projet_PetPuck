@@ -26,7 +26,6 @@
 #include <audio/audio_thread.h>
 #include <audio/play_melody.h>
 
-//#include <selector.h>
 //include our files
 #include <main.h>
 #include <obstacle_encounter.h>
@@ -79,8 +78,8 @@ static THD_FUNCTION(PanicMode, arg)
         	dac_stop();
         }
         if(led_flag_panic == 1){
-//        	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol
-        	Led_panic_mode();
+        	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol et  plutot le mettre ici qu'au dessus
+        	PanicMode_LED();
         }
 	}
     //100Hz

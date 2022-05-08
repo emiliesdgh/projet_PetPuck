@@ -4,6 +4,7 @@
 #include <leds.h>
 #include <spi_comm.h>
 
+#include <danse_mode.h>
 #include <puck_led.h>
 
 //function to initialise the LED, put them all in state OFF
@@ -17,7 +18,7 @@ void LedClear(void){
 
 
 //function to be called when thread GoodMorning detects that it's morning
-void GoodMorning(void){
+void GoodMorning_LED(void){
 
 	LedClear();
 
@@ -47,7 +48,7 @@ void GoodMorning(void){
 }
 
 //function to be called when thread GoodNight detects that it's night
-void GoodNight(void){
+void GoodNight_LED(void){
 
 	LedClear();
 
@@ -89,7 +90,7 @@ void GoodNight(void){
 
 }
 //function to be called when thread panic detects panic mode
-void Led_panic_mode(void){
+void PanicMode_LED(void){
 
 	LedClear();
 
@@ -143,7 +144,7 @@ void Led_panic_mode(void){
 	}
 }
 
-void Led_uhOh(void){
+void uhOh_LED(void){
 
 	for(int i=0; i<8; i++){
 
