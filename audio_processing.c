@@ -182,7 +182,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 		chprintf((BaseSequentialStream *)&SDU1, "shiftRB is: %d\n", shiftRB);
 
 		direction = get_direction(shiftRL, shiftLB, shiftRB);
-		chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
+		//chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
 		//chThdSleepMilliseconds(2000);
 
 		rms_above_event++;
@@ -192,13 +192,19 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 
 	if (rms_above_event > 6 && sample_number == 10) {
 		//dance mode
-		palSetPad(GPIOB, GPIOB_LED_BODY);
+		for (uint8_t i = 0; i < 10; i++) {
+			dancing_puck();
+		}
+		//palSetPad(GPIOB, GPIOB_LED_BODY);
 		sample_number = 0;
 
 	} else if (rms_above_event > 0 && sample_number == 10) {
 		//follow_direction();
-		palClearPad(GPIOB, GPIOB_LED_BODY);
-		LedSet_ALL(direction1, 1);
+		//palClearPad(GPIOB, GPIOB_LED_BODY);
+		//LedSet_ALL(direction1, 1);
+		sample_number = 0;
+		chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
+
 	}
 //}
 
