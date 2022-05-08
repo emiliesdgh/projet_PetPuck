@@ -11,9 +11,10 @@
 /* functions */
 void LedClear(void);
 
-void GoodMorning(void);
-void GoodNight(void);
-void Led_panic_mode(void);
+void GoodMorning_LED(void);
+void GoodNight_LED(void);
+void PanicMode_LED(void);
+void uhOh_LED(void);
 //void Led_dance_mode(void);
 
 void LedSet_ALL(unsigned int led_number, unsigned int value);

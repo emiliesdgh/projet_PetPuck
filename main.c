@@ -21,6 +21,12 @@
 
 #include <leds.h>				//to use the different LED functions that exist already
 #include <motors.h>				//to use the different motor functions that exist already
+//for the  panic mode : gyroscope + accéléromètre
+//#include <angles.h>
+#include <sensors/imu.h>
+#include <msgbus/messagebus.h>
+#include <i2c_bus.h>
+
 
 //to use the threads and functions so that the robot can play sounds and melodies
 #include <audio/audio_thread.h>
@@ -31,19 +37,24 @@
 #include <audio_processing.h>
 #include <fft.h>
 #include <communications.h>
-#include <gpio.h>		//on utilise pas il me semble
 #include <puck_led.h>
-#include <selector.h>	//on utilise pas il me semble
-#include <timer.h>		//on utilise pas il me semble
 #include <process_image.h>
 
 #include <obstacle_encounter.h>	//--->>> to merge with danse_mode and proximity_sensors maybe
-#include <proximity_sensor.h>
+//#include <proximity_sensor.h> -->> will delete  this file
 #include <danse_mode.h>
+#include <panic_mode.h>
 
 //include the file .h for the main
 #include <main.h>
 
+
+void SendUint8ToComputer(uint8_t* data, uint16_t size)
+{
+	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
+	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)&size, sizeof(uint16_t));
+	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)data, size);
+}
 
 static void serial_start(void)
 {
@@ -56,6 +67,10 @@ static void serial_start(void)
 
 	sdStart(&SD3, &ser_cfg); // UART3.
 }
+//TO BE INCLUDES IN MAIN.C ????
+//messagebus_t bus;
+//MUTEX_DECL(bus_lock);
+//CONDVAR_DECL(bus_condvar);
 
 //static void timer12_start(void){
 //    //General Purpose Timer configuration
@@ -73,7 +88,7 @@ static void serial_start(void)
 //    gptStartContinuous(&GPTD12, 0xFFFF);
 //}
 
-int main(void)
+int main(void)		//clear all leds at the beggining
 {
 
     halInit();
@@ -85,42 +100,56 @@ int main(void)
     //start the USB communication
     usb_start();
     //start the camera
-//	po8030_start();
-//  dcmi_start();
+	po8030_start();
+	dcmi_start();
     //start the audio
     dac_start();
     //start the RGB LEDs
 	spi_comm_start();
+	initial_proximity();		//initialization for the proximity thread
+	//ATTENTION A L'ORDRE DES APPELS DE  CES FONCTIONS !!
+
+    // inits the I2C communication
+    i2c_start();
+
+	imu_start();
 	//start the image processing ??
-//	process_image_start();
-	motors_init();				//initialization of the motors
+	process_image_start();
 	//start the mic audio processing  ?
-	mic_start(&processAudioData);
+//	mic_start(&processAudioData);
 //
-	#ifdef TESTING
-    static float send_tab[MICSAMPLESIZE];
-    while (1) { //trying to send the PCM data to the computer, need to edit python script?
-    			//so far, copied from TP5 files--NOTE: edited audio_processing.c and .h too
-    //waits until a result must be sent to the computer
-    wait_send_to_computer();
-    //we copy the buffer to avoid conflicts
-    arm_copy_f32(get_audio_buffer_ptr(MIC_L_INPUT), send_tab, MICSAMPLESIZE);
-    SendFloatToComputer((BaseSequentialStream *) &SD3, send_tab, MICSAMPLESIZE);
-    }
-	#endif //TESTING
+//	#ifdef TESTING
+//    static float send_tab[MICSAMPLESIZE];
+//    while (1) { //trying to send the PCM data to the computer, need to edit python script?
+//    			//so far, copied from TP5 files--NOTE: edited audio_processing.c and .h too
+//    //waits until a result must be sent to the computer
+//    wait_send_to_computer();
+//    //we copy the buffer to avoid conflicts
+//    arm_copy_f32(get_audio_buffer_ptr(MIC_R_INPUT), send_tab, MICSAMPLESIZE);
+//    SendF loatToComputer((BaseSequentialStream *) &SD3, send_tab, MICSAMPLESIZE);
+//    }
+//	#endif //TESTING
 //
 	//threads start
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
-//	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
-
-
-//	initial_proximity();		//initialization for the proximity thread
 	playMelodyStart();			//initialization for the melody thread
-	//%%%%%%%%%%%%%%%%%%%%%%%%%
-//
 
-    //starts timer 12
-//    timer12_start();
+	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
+
+	motors_init();				//initialization of the motors
+
+
+
+
+	// starts the calibration of the sensors
+    calibrate_gyro();
+    calibrate_acc();
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%
+//
+	PanicMode_start();
+
+
 
 //
 //    unsigned int a = 22;
@@ -142,16 +171,26 @@ int main(void)
 //
 //		 danseMode_sansArgument();
 //	 }
-//	    	GoodNight();
+//	GoodMorning();
+//	chThdSleepMilliseconds(1000);
+//
+//	GoodNight();
+//	chThdSleepMilliseconds(1000);
+//
+//	Led_panic_mode();
+//	chThdSleepMilliseconds(1000);
 
-//	while(1){
-//
-////		danseMode(speed_main);
-//
-////		dancing_puck();
-////		Led_dance_mode();
-//
-//	}
+//	Led_uhOh();
+
+
+	while(1){
+//		dancing_puck();
+//		danseMode(speed_main);
+//		test_main_panic();
+//		dancing_puck();
+//		Led_dance_mode();
+
+	}
 
 
 //    palTogglePad(GPIOB, GPIOB_LED_BODY);
@@ -193,6 +232,8 @@ int main(void)
         chThdSleepMilliseconds(1000);
 ////
     }
+
+
 
 }
 

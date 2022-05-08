@@ -4,6 +4,7 @@
 #include <leds.h>
 #include <spi_comm.h>
 
+#include <danse_mode.h>
 #include <puck_led.h>
 
 //function to initialise the LED, put them all in state OFF
@@ -15,8 +16,9 @@ void LedClear(void){
 	palClearPad(GPIOB, GPIOB_LED_BODY);
 }
 
+
 //function to be called when thread GoodMorning detects that it's morning
-void GoodMorning(void){
+void GoodMorning_LED(void){
 
 	LedClear();
 
@@ -46,7 +48,7 @@ void GoodMorning(void){
 }
 
 //function to be called when thread GoodNight detects that it's night
-void GoodNight(void){
+void GoodNight_LED(void){
 
 	LedClear();
 
@@ -82,62 +84,86 @@ void GoodNight(void){
 			set_led(3,0);
 		}
 //    	chThdSleepMilliseconds(100);
-		chThdSleepMilliseconds(50);
+		chThdSleepMilliseconds(30);
 
 	}while(led_intensity !=  0);
 
 }
 //function to be called when thread panic detects panic mode
-void Led_panic_mode(void){
+void PanicMode_LED(void){
+
+	LedClear();
 
 	for(int i=0; i<4; i++){
 		set_led(i, 1);
 	}
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 	for(int i=0; i<4; i++){
 		set_led(i, 0);
 	}
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 
 	palTogglePad(GPIOB, GPIOB_LED_BODY);
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 
 	palTogglePad(GPIOB, GPIOB_LED_BODY);
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 
 	for(int i=0; i<4; i++){
 		set_led(i, 1);
 	}
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 	for(int i=0; i<4; i++){
 		set_led(i, 0);
 	}
 
 	palTogglePad(GPIOD, GPIOD_LED_FRONT);
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 
 	palTogglePad(GPIOD, GPIOD_LED_FRONT);
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(80);
 
 	for(int j=0; j<3; j++){
 
 		for(int i=0; i<4; i++){
 			toggle_rgb_led(i, j, LED_RGB_INTENSITY);
 		}
-		chThdSleepMilliseconds(100);
+		chThdSleepMilliseconds(80);
 
 		for(int i=0; i<4; i++){
 			toggle_rgb_led(i, j, LED_RGB_INTENSITY);
 		}
-		chThdSleepMilliseconds(100);
+		chThdSleepMilliseconds(80);
 		for(int i=0; i<4; i++){
 			set_led(i, 1);
 		}
-		chThdSleepMilliseconds(100);
+		chThdSleepMilliseconds(80);
 		for(int i=0; i<4; i++){
 			set_led(i, 0);
 		}
 	}
+}
+
+void uhOh_LED(void){
+
+	for(int i=0; i<8; i++){
+
+		LedSet_ALL(i,1);
+	}
+	palTogglePad(GPIOD, GPIOD_LED_FRONT);
+
+	palTogglePad(GPIOB, GPIOB_LED_BODY);
+
+	chThdSleepMilliseconds(250);
+
+	for(int i=0; i<8; i++){
+
+		LedSet_ALL(i,0);
+	}
+	palTogglePad(GPIOD, GPIOD_LED_FRONT);
+
+	palTogglePad(GPIOB, GPIOB_LED_BODY);
+
 }
 //--->>> directly build in the dancing function
 ////function to be called when robot is dancing

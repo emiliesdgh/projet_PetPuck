@@ -8,15 +8,11 @@
 #define POSITION_REACHED        1
 
 
-//void motor_set_speed(float speed_r, float speed_l); => elle existe dans motors.c
-
-
 void motor_set_danse_speed(float speed_r, float speed_l);
-//void motor_set_danse_position(float position_r, float position_l, float speed_r, float speed_l);
-
 
 void dancing_puck(void);
 
-//void danseMode(float danse_speed); //--> pourrait etre void  pour  choisir ns  la vitesse
+void GoodMorning_motors(void);
+
 
 #endif
