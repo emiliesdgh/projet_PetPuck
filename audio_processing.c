@@ -51,7 +51,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 		static uint16_t mustSend = 0;
 	#endif //TESTING
 	static uint16_t sample_number = 0;
-	static int32_t sumavgmicR = 0;
+//	static int32_t sumavgmicR = 0;
 //	int32_t Rstreamavg = 0;
 
 
@@ -67,6 +67,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 	//static int32_t rms_avg_buffer[16000/MICSAMPLESIZE]; //16000: data pts for 1 sec
 	//static int8_t buffer_pt = 0;
 	int16_t count = 0;
+
 	int16_t percentage_above_loud = 0; //tells % of data points above a certain predefined level
 
 	//loop to fill the buffers
@@ -100,6 +101,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 //			Rstreamavg = get_micro_average(micRinput, MICSAMPLESIZE);
 //			sumavgmicR += Rstreamavg;
 			total_samples = 0; 	//to refill buffer later
+			current_micR_rms = 0;
 			break;
 		}
 	}
@@ -135,75 +137,91 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 //		palClearPad(GPIOB, GPIOB_LED_BODY);
 //	}
 //
-	if (current_micR_rms > micR_rms_value && current_micR_rms > EVENT && sample_number < 10) {
-		micR_rms_value = current_micR_rms;
-		//calculate direction of sound -- will only follow it if later finds out it was only a call and not music playing
-		static float32_t correlation[CORRELATIONSIZE] = {0}; //careful, after computing direction, reinitialise to 0!!!
-
-		arm_correlate_f32(micRinput, MICSAMPLESIZE, micLinput, MICSAMPLESIZE, correlation); //<- causes problems idk how to fix
-		/*stopped giving an error when i changed MICSAMPLESIZE to 24 (low value), still gave error w/ 160*/
-
-		int32_t shiftRL = 0;
-		float maxRL = 0;
-		for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
-			if (correlation[i] > maxRL) { //R-L --> L lags R by shiftRL??
-				shiftRL = i - (int)CORRELATIONSIZE/2;//- MICSAMPLESIZE/2;
-				maxRL = correlation[i];
-				correlation[i] = 0;
-			}
-		}
-
-		chprintf((BaseSequentialStream *)&SDU1, "shiftRL is: %d\n", shiftRL);
-
-		arm_correlate_f32(micLinput, MICSAMPLESIZE, micBinput, MICSAMPLESIZE, correlation);
-		int32_t shiftLB = 0;
-		float maxLB = 0;
-		for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
-			if (correlation[i] > maxLB) { //L-B
-				shiftLB = i - (int)CORRELATIONSIZE/2; //- MICSAMPLESIZE/2;
-				maxLB = correlation[i];
-				correlation[i] = 0;
-			}
-		}
-
-		chprintf((BaseSequentialStream *)&SDU1, "shiftLB is: %d\n", shiftLB);
-
-		arm_correlate_f32(micRinput, MICSAMPLESIZE, micBinput, MICSAMPLESIZE, correlation);
-		int32_t shiftRB = 0;
-		float maxRB = 0;
-		for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
-			if (correlation[i] > maxRB) { //L-B
-				shiftRB = i - (int)CORRELATIONSIZE/2; //- MICSAMPLESIZE/2;
-				maxRB = correlation[i];
-				correlation[i] = 0;
-			}
-		}
-
-		chprintf((BaseSequentialStream *)&SDU1, "shiftRB is: %d\n", shiftRB);
-
-		direction = get_direction(shiftRL, shiftLB, shiftRB);
-		//chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
-		//chThdSleepMilliseconds(2000);
-
-		rms_above_event++;
+	if (sample_number == 11) {
+		sample_number = 0;
 	}
 
-	int32_t direction1 = direction - 1;
+	if (current_micR_rms > EVENT && sample_number < 10) {
+//		chprintf((BaseSequentialStream *)&SDU1, "current_micR_rms is: %f\n", current_micR_rms);
 
-	if (rms_above_event > 6 && sample_number == 10) {
+		rms_above_event++;
+
+		if (current_micR_rms > micR_rms_value) {
+			micR_rms_value = current_micR_rms;
+			//calculate direction of sound -- will only follow it if later finds out it was only a call and not music playing
+			static float32_t correlation[CORRELATIONSIZE] = {0}; //careful, after computing direction, reinitialise to 0!!!
+
+			arm_correlate_f32(micRinput, MICSAMPLESIZE, micLinput, MICSAMPLESIZE, correlation); //<- causes problems idk how to fix
+			/*stopped giving an error when i changed MICSAMPLESIZE to 24 (low value), still gave error w/ 160*/
+
+			int32_t shiftRL = 0;
+			float maxRL = 0;
+			for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
+				if (correlation[i] > maxRL) { //R-L --> L lags R by shiftRL??
+					shiftRL = i - (int)CORRELATIONSIZE/2;//- MICSAMPLESIZE/2;
+					maxRL = correlation[i];
+					correlation[i] = 0;
+				}
+			}
+
+			//chprintf((BaseSequentialStream *)&SDU1, "shiftRL is: %d\n", shiftRL);
+
+			arm_correlate_f32(micLinput, MICSAMPLESIZE, micBinput, MICSAMPLESIZE, correlation);
+			int32_t shiftLB = 0;
+			float maxLB = 0;
+			for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
+				if (correlation[i] > maxLB) { //L-B
+					shiftLB = i - (int)CORRELATIONSIZE/2; //- MICSAMPLESIZE/2;
+					maxLB = correlation[i];
+					correlation[i] = 0;
+				}
+			}
+
+			//chprintf((BaseSequentialStream *)&SDU1, "shiftLB is: %d\n", shiftLB);
+
+			arm_correlate_f32(micRinput, MICSAMPLESIZE, micBinput, MICSAMPLESIZE, correlation);
+			int32_t shiftRB = 0;
+			float maxRB = 0;
+			for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
+				if (correlation[i] > maxRB) { //L-B
+					shiftRB = i - (int)CORRELATIONSIZE/2; //- MICSAMPLESIZE/2;
+					maxRB = correlation[i];
+					correlation[i] = 0;
+				}
+			}
+
+			//chprintf((BaseSequentialStream *)&SDU1, "shiftRB is: %d\n", shiftRB);
+
+			direction = get_direction(shiftRL, shiftLB, shiftRB);
+			//chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
+			//chThdSleepMilliseconds(2000);
+
+		}
+	}
+
+	if (rms_above_event > 6 && sample_number == 10 && percentage_above_loud > 0.5) { //!!! use DEFINE for the 10 (in case MICSAMPLESIZE is changed
+//		chprintf((BaseSequentialStream *)&SDU1, "rms# is: %d\n", rms_above_event);
+//		chprintf((BaseSequentialStream *)&SDU1, "micR_rms is: %f\n", current_micR_rms);
+
 		//dance mode
-		for (uint8_t i = 0; i < 10; i++) {
+		for (uint8_t i = 0; i < 8; i++) {
 			dancing_puck();
 		}
 		//palSetPad(GPIOB, GPIOB_LED_BODY);
 		sample_number = 0;
+		rms_above_event = 0;
+		count = 0;
 
 	} else if (rms_above_event > 0 && sample_number == 10) {
 		//follow_direction();
 		//palClearPad(GPIOB, GPIOB_LED_BODY);
-		//LedSet_ALL(direction1, 1);
 		sample_number = 0;
-		chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
+		int32_t direction1 = direction - 1;
+		LedSet_ALL(direction1, 1);
+//		chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction1);
+		rms_above_event = 0;
+		count = 0;
+		chThdSleepMilliseconds(2000);
 
 	}
 //}

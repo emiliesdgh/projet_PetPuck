@@ -9,7 +9,7 @@
 #define WHISTLE		250
 #define CLAP	800
 #define LONGEVENT	140
-#define EVENT	20
+#define EVENT	250
 #define PI	3.14
 
 //max # of samples that can exist between 2 signals

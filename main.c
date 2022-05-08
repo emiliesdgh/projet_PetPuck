@@ -108,17 +108,19 @@ int main(void)		//clear all leds at the beggining
 //	initial_proximity();		//initialization for the proximity thread
 	//ATTENTION A L'ORDRE DES APPELS DE  CES FONCTIONS !!
 
-    // inits the I2C communication
-    i2c_start();
-
-	imu_start();
-	//start the image processing ??
-	process_image_start();
-	//start the mic audio processing  ?
 
 	motors_init();				//initialization of the motors
 
 	mic_start(&processAudioData);
+
+    //inits the I2C communication
+    //i2c_start();
+
+	//imu_start();
+	//start the image processing ??
+	process_image_start();
+	//start the mic audio processing  ?
+
 //ush
 //	#ifdef TESTING
 //    static float send_tab[MICSAMPLESIZE];
@@ -141,13 +143,12 @@ int main(void)		//clear all leds at the beggining
 
 
 	// starts the calibration of the sensors
-    calibrate_gyro();
-    calibrate_acc();
+//    calibrate_gyro();
+//    calibrate_acc();
 
     //%%%%%%%%%%%%%%%%%%%%%%%%%
 //
 //	PanicMode_start();
-
 
 
 //
@@ -182,14 +183,14 @@ int main(void)		//clear all leds at the beggining
 //	Led_uhOh();
 
 
-	while(1){
-//		dancing_puck();
-//		danseMode(speed_main);
-//		test_main_panic();
-//		dancing_puck();
-//		Led_dance_mode();
-
-	}
+//	while(1){
+////		dancing_puck();
+////		danseMode(speed_main);
+////		test_main_panic();
+////		dancing_puck();
+////		Led_dance_mode();
+//
+//	}
 
 
 //    palTogglePad(GPIOB, GPIOB_LED_BODY);
