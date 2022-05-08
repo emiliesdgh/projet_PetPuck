@@ -93,26 +93,26 @@ int main(void)
 	spi_comm_start();
 	//start the image processing ??
 //	process_image_start();
+	motors_init();				//initialization of the motors
 	//start the mic audio processing  ?
-//	mic_start(&processAudioData);
+	mic_start(&processAudioData);
 //
-//	#ifdef TESTING
-//    static float send_tab[MICSAMPLESIZE];
-//    while (1) { //trying to send the PCM data to the computer, need to edit python script?
-//    			//so far, copied from TP5 files--NOTE: edited audio_processing.c and .h too
-//    //waits until a result must be sent to the computer
-//    wait_send_to_computer();
-//    //we copy the buffer to avoid conflicts
-//    arm_copy_f32(get_audio_buffer_ptr(MIC_R_INPUT), send_tab, MICSAMPLESIZE);
-//    SendF loatToComputer((BaseSequentialStream *) &SD3, send_tab, MICSAMPLESIZE);
-//    }
-//	#endif //TESTING
+	#ifdef TESTING
+    static float send_tab[MICSAMPLESIZE];
+    while (1) { //trying to send the PCM data to the computer, need to edit python script?
+    			//so far, copied from TP5 files--NOTE: edited audio_processing.c and .h too
+    //waits until a result must be sent to the computer
+    wait_send_to_computer();
+    //we copy the buffer to avoid conflicts
+    arm_copy_f32(get_audio_buffer_ptr(MIC_L_INPUT), send_tab, MICSAMPLESIZE);
+    SendFloatToComputer((BaseSequentialStream *) &SD3, send_tab, MICSAMPLESIZE);
+    }
+	#endif //TESTING
 //
 	//threads start
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
 //	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
 
-	motors_init();				//initialization of the motors
 
 //	initial_proximity();		//initialization for the proximity thread
 	playMelodyStart();			//initialization for the melody thread
@@ -142,16 +142,16 @@ int main(void)
 //
 //		 danseMode_sansArgument();
 //	 }
-	    	GoodNight();
+//	    	GoodNight();
 
-	while(1){
-
-//		danseMode(speed_main);
-
-//		dancing_puck();
-//		Led_dance_mode();
-
-	}
+//	while(1){
+//
+////		danseMode(speed_main);
+//
+////		dancing_puck();
+////		Led_dance_mode();
+//
+//	}
 
 
 //    palTogglePad(GPIOB, GPIOB_LED_BODY);
