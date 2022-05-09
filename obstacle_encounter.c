@@ -32,7 +32,6 @@
 //#include <selector.h>
 //include our files
 #include <main.h>
-//#include <proximity_sensor.h> -->> will delete  this file
 #include <puck_led.h>
 
 #include <obstacle_encounter.h>
@@ -42,18 +41,19 @@ static int16_t speed = 0;
 static int led_flag_uhOh = 0; //led_flag
 
 static uint16_t distance_prox = 0;
+static int ambient_testing = 0;
 
 //semaphore
 static BSEMAPHORE_DECL(image_ready_sem, TRUE);
 
 
-static uint8_t color;
+//static uint8_t color;
 
 enum {
     RED,
     GREEN,
 	BLUE,
-    NOCOLOR
+//    NOCOLOR
 };
 
 //*********PROXIMITY + DISTANCE TO STOP THREAD***********
@@ -87,6 +87,8 @@ static THD_FUNCTION(ProximityToStop, arg){
 		time = chVTGetSystemTime();
 
 		distance_prox = VL53L0X_get_dist_mm();
+		ambient_testing = get_ambient_light(1);
+
 
 		//fréquence de 100Hz
 		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
@@ -104,6 +106,10 @@ void proximityToStop_start(void){
 //sent to function that checks this distance in file obtacle_encounter.c
 uint16_t get_distance_toStop(void){
 	return distance_prox;
+}
+
+int get_ambient_testing(void){
+	return  ambient_testing;
 }
 
 //*********OBSTACLE ENCOUNTER THREAD***********
@@ -160,31 +166,18 @@ uint32_t get_colors(void){
 
 	}
 
-
 	if(redred >= greengreen && redred >= blueblue){
-
-//		chprintf((BaseSequentialStream *)&SDU1, "RED VALUE = %d\n", redred);
 
 		return RED;
 
 	}else if(greengreen >= blueblue){
 
-//		chprintf((BaseSequentialStream *)&SDU1, "GREEN VALUE = %d\n", greengreen);
-
 		return GREEN;
 
-	}else if(blueblue){
-//		chprintf((BaseSequentialStream *)&SDU1, "GREEN in blue VALUE = %d\n", greengreen);
-
-//		chprintf((BaseSequentialStream *)&SDU1, "RED in blue VALUE = %d\n", redred);
-
-//		chprintf((BaseSequentialStream *)&SDU1, "BLUE VALUE = %d\n", blueblue);
+	}else {
 
 		return BLUE;
 
-	}else{
-
-		return NOCOLOR;
 	}
 
 }
@@ -205,13 +198,11 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 		//need function to modify the value of distance_mm which will be created in file proximity_sensor
 		distance_mm = get_distance_toStop();
 
+
 		speed = motors_speed(distance_mm);
 
 		left_motor_set_speed(speed);
 		right_motor_set_speed(speed);
-
-
-
 
 		if(led_flag_uhOh == 1){
 	    	uint32_t color = get_colors();
@@ -238,11 +229,6 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 				for(int i=0; i<4; ++i){
 				    set_rgb_led(i,0,0,LED_RGB_INTENSITY);
 				}
-			}else if(color==NOCOLOR){
-
-				for(int i=0; i<4; ++i){
-					set_rgb_led(i,LED_RGB_INTENSITY,LED_RGB_INTENSITY,LED_RGB_INTENSITY);
-				}
 			}
 //			playNote(NOTE_E4, 120);
 		}
@@ -259,61 +245,4 @@ void ObstacleEncounter_start(void){
 	chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO, ObstacleEncounter, NULL);
 
 }
-
-
-
-//
-//
-//static THD_WORKING_AREA(waProcessColor, 2048);
-//static THD_FUNCTION(ProcessColor, arg) {
-//
-//    chRegSetThreadName(__FUNCTION__);
-//    (void) arg;
-//
-//    systime_t time;
-//
-//    while(1)
-//    {
-//    	time = chVTGetSystemTime();
-//
-//    	uint32_t color = get_colors();
-//
-//
-//		if(color==RED){
-//
-//			clear_leds();
-//
-//			for(int i=0; i<4; ++i){
-//			    set_rgb_led(i,LED_RGB_INTENSITY,0,0);
-//			}
-//
-//		}else if(color==GREEN){
-//
-//			clear_leds();
-//			for(int i=0; i<4; ++i){
-//	   			set_rgb_led(i,0,LED_RGB_INTENSITY,0);
-//			}
-//
-//		}else if(color==BLUE){
-//
-//			clear_leds();
-//			for(int i=0; i<4; ++i){
-//			    set_rgb_led(i,0,0,LED_RGB_INTENSITY);
-//			}
-//		}else if(color==NOCOLOR){
-//
-//			for(int i=0; i<4; ++i){
-//				set_rgb_led(i,LED_RGB_INTENSITY,LED_RGB_INTENSITY,LED_RGB_INTENSITY);
-//			}
-//
-//		}
-//
-//		//fréquence de 100Hz
-//        chThdSleepUntilWindowed(time, time + MS2ST(10));
-//    }
-//}
-//
-//void process_color_start(void) {
-//    chThdCreateStatic(waProcessColor, sizeof(waProcessColor), NORMALPRIO, ProcessColor, NULL);
-//}
 

@@ -9,6 +9,11 @@
 #include <camera/po8030.h>
 #include <camera/dcmi_camera.h>
 
+#include "sensors/VL53L0X/VL53L0X.h"
+#include "sensors/proximity.h"
+#include <leds.h>
+
+
 #include <process_image.h>
 #include <puck_led.h>
 
@@ -19,6 +24,48 @@ static uint16_t line_position = IMAGE_BUFFER_SIZE/2;	//middle
 
 //semaphore
 static BSEMAPHORE_DECL(image_ready_sem, TRUE);
+
+//***TEST
+/* internal variables for prox */
+int ambient_ir[8];				 // ambient light measurement
+void test_lecture_(void){
+
+//	for(int i=0; i<8;i++){
+//
+//		int am_light = get_ambient_light(i);
+//		chprintf((BaseSequentialStream *)&SDU1, "ambient light dans le for = %d\n", am_light);
+//
+//	}
+
+	int ir_1 = 0;
+
+	int am_light = 0;
+	int prox_light=0;
+
+	int final_try = 0;
+
+	am_light = get_ambient_light(ir_1);
+	prox_light = get_prox(ir_1);
+
+	final_try = am_light -prox_light;
+	if(am_light<1000){
+
+		palSetPad(GPIOB, GPIOB_LED_BODY);
+		palClearPad(GPIOD, GPIOD_LED_FRONT);
+
+	}else if(am_light<1000){
+
+		palClearPad(GPIOB, GPIOB_LED_BODY);
+
+	}else{
+
+		palSetPad(GPIOD, GPIOD_LED_FRONT);
+	}
+	chprintf((BaseSequentialStream *)&SDU1, "ambient light dans le for = %d\n", am_light);
+	chprintf((BaseSequentialStream *)&SDU1, "prox light dans le for = %d\n", prox_light);
+
+
+}
 
 
 //gets ambient light average and compares it to DUSKDAWN
@@ -99,6 +146,7 @@ static THD_FUNCTION(ProcessImage, arg) {
 			image[i/2] = (uint8_t)img_buff_ptr[i]&0xF8;
 		}
 //		ambient_light(image);
+//		test_lecture_();
 		//search for a line in the image and gets its width in pixels
 		//lineWidth = extract_line_width(image);
     }

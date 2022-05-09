@@ -2,7 +2,7 @@
 #define PROCESS_IMAGE_H
 
 
-
+void test_lecture_(void);
 
 float get_distance_cm(void);
 uint16_t get_line_position(void);
