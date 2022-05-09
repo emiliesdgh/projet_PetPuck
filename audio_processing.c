@@ -79,7 +79,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 		//micFinput[total_samples] = (float)data[i + MIC_FRONT]; //dont think it's necessary bc we dont want 3D location (only 2d)
 
 
-		if (micRinput[total_samples] > EVENT) {
+		if (micRinput[total_samples] > LOUD) { //LOUD or EVENT??
 			count++;
 		}
 
@@ -199,7 +199,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 		}
 	}
 
-	if (rms_above_event > 6 && sample_number == 10 && percentage_above_loud > 0.5) { //!!! use DEFINE for the 10 (in case MICSAMPLESIZE is changed
+	if (rms_above_event > 6 && sample_number == 10 && percentage_above_loud > 0.55) { //!!! use DEFINE for the 10 (in case MICSAMPLESIZE is changed
 //		chprintf((BaseSequentialStream *)&SDU1, "rms# is: %d\n", rms_above_event);
 //		chprintf((BaseSequentialStream *)&SDU1, "micR_rms is: %f\n", current_micR_rms);
 
