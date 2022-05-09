@@ -9,12 +9,12 @@
 #define WHISTLE		250
 #define CLAP	800
 #define LONGEVENT	140
-#define EVENT	150
-#define LOUD	200
+#define EVENT	120
+#define LOUD	100
 #define PI	3.14
 
 //max # of samples that can exist between 2 signals
-#define MAXDELTA1	6//3 //2.8		//sampling frequency[Hz]*dist between micros[cm] / speed of sound [cm/s]
+#define MAXDELTA1	2//3//6//3 //2.8		//sampling frequency[Hz]*dist between micros[cm] / speed of sound [cm/s]
 //6cm   we approximate w/ an integer? maybe better
 #define MAXDELTA2	5//2 //2.099 	//16k 					*?						 /34300
 //4.5cm

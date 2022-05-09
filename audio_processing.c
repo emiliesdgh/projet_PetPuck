@@ -21,6 +21,7 @@ static float micLinput[MICSAMPLESIZE];
 static float micRinput[MICSAMPLESIZE];
 static float micFinput[MICSAMPLESIZE];
 static float micBinput[MICSAMPLESIZE];
+static int8_t dance_flag = 0;
 
 
 #define MIN_VALUE_THRESHOLD	10000
@@ -36,7 +37,7 @@ static float micBinput[MICSAMPLESIZE];
 *	uint16_t num_samples	Tells how many data we get in total (should always be 640)
 *	*/
 
-void processAudioData(int16_t *data, uint16_t num_samples){
+void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_samples (how much is it?) bc i never call it w/ something
 
 	clear_leds();
 
@@ -55,7 +56,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 //	int32_t Rstreamavg = 0;
 
 
-	static float32_t micR_rms_value = 0;
+	static float32_t micR_rms_value = 0;			//demander pour static declaration inside function
 	float32_t current_micR_rms = 0;
 
 	static uint8_t rms_above_event = 0;
@@ -102,6 +103,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 //			sumavgmicR += Rstreamavg;
 			total_samples = 0; 	//to refill buffer later
 			current_micR_rms = 0;
+			//micR_rms_value = 0;
 			break;
 		}
 	}
@@ -136,12 +138,9 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 //		rms_above_event = 0;
 //		palClearPad(GPIOB, GPIOB_LED_BODY);
 //	}
-//
-	if (sample_number == 11) {
-		sample_number = 0;
-	}
 
-	if (current_micR_rms > EVENT && sample_number < 10) {
+
+	if (current_micR_rms > EVENT) {// && sample_number < 10) {
 //		chprintf((BaseSequentialStream *)&SDU1, "current_micR_rms is: %f\n", current_micR_rms);
 
 		rms_above_event++;
@@ -158,7 +157,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 			float maxRL = 0;
 			for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
 				if (correlation[i] > maxRL) { //R-L --> L lags R by shiftRL??
-					shiftRL = i - (int)CORRELATIONSIZE/2;//- MICSAMPLESIZE/2;
+					shiftRL = i - MICSAMPLESIZE - 1;//(int)CORRELATIONSIZE/2;//- MICSAMPLESIZE/2;
 					maxRL = correlation[i];
 					correlation[i] = 0;
 				}
@@ -171,7 +170,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 			float maxLB = 0;
 			for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
 				if (correlation[i] > maxLB) { //L-B
-					shiftLB = i - (int)CORRELATIONSIZE/2; //- MICSAMPLESIZE/2;
+					shiftLB = i - MICSAMPLESIZE - 1;//(int)CORRELATIONSIZE/2; //- MICSAMPLESIZE/2;
 					maxLB = correlation[i];
 					correlation[i] = 0;
 				}
@@ -184,7 +183,7 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 			float maxRB = 0;
 			for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
 				if (correlation[i] > maxRB) { //L-B
-					shiftRB = i - (int)CORRELATIONSIZE/2; //- MICSAMPLESIZE/2;
+					shiftRB = i - MICSAMPLESIZE - 1;//(int)CORRELATIONSIZE/2; //- MICSAMPLESIZE/2;
 					maxRB = correlation[i];
 					correlation[i] = 0;
 				}
@@ -198,32 +197,50 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 
 		}
 	}
+//		else if (current_micR_rms <= EVENT) {
+//		dance_flag = 0;
+//	}
 
-	if (rms_above_event > 6 && sample_number == 10 && percentage_above_loud > 0.55) { //!!! use DEFINE for the 10 (in case MICSAMPLESIZE is changed
-//		chprintf((BaseSequentialStream *)&SDU1, "rms# is: %d\n", rms_above_event);
-//		chprintf((BaseSequentialStream *)&SDU1, "micR_rms is: %f\n", current_micR_rms);
+	if (sample_number == 10) {
+		sample_number = 0;
+		micR_rms_value = 0;
+		//if music:
+		if (rms_above_event > 5 && percentage_above_loud > 0.5) { //!!! use DEFINE for the 10 (in case MICSAMPLESIZE is changed
+	//		chprintf((BaseSequentialStream *)&SDU1, "rms# is: %d\n", rms_above_event);
+	//		chprintf((BaseSequentialStream *)&SDU1, "micR_rms is: %f\n", current_micR_rms);
 
-		//dance mode
-		for (uint8_t i = 0; i < 8; i++) {
-			dancing_puck();
+	//		//dance mode
+	//		for (uint8_t i = 0; i < 8; i++) {
+	//			dancing_puck();
+	//		}
+			dance_flag = 1; //yes dancing
+			//palSetPad(GPIOB, GPIOB_LED_BODY);
+			rms_above_event = 0;
+			count = 0;
+			//chprintf((BaseSequentialStream *)&SDU1, "cond 1\n");
+			//if call or whistle
+		} else if (rms_above_event > 0) {
+			//chprintf((BaseSequentialStream *)&SDU1, "cond 2\n");
+			//follow_direction();
+			//palClearPad(GPIOB, GPIOB_LED_BODY);
+			int32_t direction1 = direction - 1;
+			//LedSet_ALL(direction1, 1);
+			//chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction1);
+			dance_flag = 0; //no dancing
+			rms_above_event = 0;
+			count = 0;
+			//chThdSleepMilliseconds(2000);
+		} else {
+			//chprintf((BaseSequentialStream *)&SDU1, "cond 3\n");
+			dance_flag = 0; //no dancing
+			rms_above_event = 0;
+			count = 0;
 		}
-		//palSetPad(GPIOB, GPIOB_LED_BODY);
-		sample_number = 0;
-		rms_above_event = 0;
-		count = 0;
 
-	} else if (rms_above_event > 0 && sample_number == 10) {
-		//follow_direction();
-		//palClearPad(GPIOB, GPIOB_LED_BODY);
-		sample_number = 0;
-		int32_t direction1 = direction - 1;
-		LedSet_ALL(direction1, 1);
-//		chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction1);
-		rms_above_event = 0;
-		count = 0;
-		chThdSleepMilliseconds(2000);
-
+		chprintf((BaseSequentialStream *)&SDU1, "flag is%d\n", dance_flag);
+		//dancing_puck(dance_flag);
 	}
+
 //}
 
 ///************************* here we differentiate between call & music *********************************/
@@ -412,7 +429,7 @@ int32_t get_direction(int32_t shift1, int32_t shift2, int32_t shift3) {
 		direction = 3;
 	} else if (shift1 <= -MAXDELTA1) {
 		direction = 7;
-	} else if (shift1 > 0) {
+	} else if (shift1 < 0) {
 		//direction1 = 8;
 		if (shift2 > 0) {
 			direction = 8;
