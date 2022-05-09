@@ -3,13 +3,28 @@
 
 
 #define FFT_SIZE 	1024
-#define MICSAMPLESIZE	1024 //to put: 160
-#define CORRELATIONSAMPLESIZE 	(2*MICSAMPLESIZE-1)
-#define NOMUSIC		15
+#define MICSAMPLESIZE	1600 //320 //24 //1600 //1024 //160
+#define CORRELATIONSIZE 	(2*MICSAMPLESIZE-1)
+#define NOMUSIC		30
+#define WHISTLE		250
+#define CLAP	800
+#define LONGEVENT	140
+#define EVENT	150
+#define LOUD	200
+#define PI	3.14
+
+//max # of samples that can exist between 2 signals
+#define MAXDELTA1	6//3 //2.8		//sampling frequency[Hz]*dist between micros[cm] / speed of sound [cm/s]
+//6cm   we approximate w/ an integer? maybe better
+#define MAXDELTA2	5//2 //2.099 	//16k 					*?						 /34300
+//4.5cm
 
 typedef enum { //this is to try and get PCM data
 	//2 times FFT_SIZE because these arrays contain complex numbers (real + imaginary)
-	MIC_R_INPUT = 0
+	MIC_R_INPUT = 0,
+	MIC_L_INPUT = 0,
+	MIC_F_INPUT = 0,
+	MIC_B_INPUT = 0
 //	LEFT_CMPLX_INPUT = 0,
 //	RIGHT_CMPLX_INPUT,
 //	FRONT_CMPLX_INPUT,
@@ -21,7 +36,12 @@ typedef enum { //this is to try and get PCM data
 //	BACK_OUTPUT
 } BUFFER_NAME_t;
 
-void processAudioData2(int16_t *data, uint16_t num_samples);
+
+static const float asin_lookup[2][9] = {
+		{-1, -0.87 /*-sqrt3/2*/, -0.71 /*-sqrt2/2*/, -0.5, 0, 0.5, 0.71, -0.87, 1},
+		{-PI/2, -PI/3, -PI/4, -PI/6, 0, PI/6, PI/4, PI/3, PI/2}
+};
+
 
 void processAudioData(int16_t *data, uint16_t num_samples);
 
@@ -35,6 +55,12 @@ int32_t get_micro_average(float *micro_ID, uint16_t sample_size);
 uint8_t check_for_call(float *data, uint16_t num_samples, int32_t stream_avg);
 
 void follow_direction(void);
+
+void get_micro_RMS(float *micro_ID, uint16_t sample_size, uint32_t micro_rms);
+
+int32_t get_direction(int32_t shift1, int32_t shift2, int32_t shift3);
+
+void turn_led(float angle);
 
 /*
 *	Returns the pointer to the BUFFER_NAME_t buffer asked

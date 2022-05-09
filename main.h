@@ -51,7 +51,7 @@ extern "C" {
 
 
 //uncomment to use python script and read microhpone data -- careful: also change MICSAMPLESIZE to 1024 in audio_processing.h
-#define TESTING
+//#define TESTING
 
 
 /** Robot wide IPC bus. */

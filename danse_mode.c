@@ -60,6 +60,8 @@ void dancing_puck(void){
 	chThdSleepMilliseconds(200);
 	palTogglePad(GPIOB, GPIOB_LED_BODY);
 	chThdSleepMilliseconds(200);
+
+	motor_set_danse_speed(0, 0);
 }
 
 

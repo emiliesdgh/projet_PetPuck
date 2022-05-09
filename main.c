@@ -14,7 +14,6 @@
 #include <camera/po8030.h>
 
 
-
 //include  the files from the given library
 #include <spi_comm.h>			//to be able to use the RGB LEDs
 #include "sensors/proximity.h"	//to be  able to use the proximity threads
@@ -106,18 +105,23 @@ int main(void)		//clear all leds at the beggining
     dac_start();
     //start the RGB LEDs
 	spi_comm_start();
-	initial_proximity();		//initialization for the proximity thread
+//	initial_proximity();		//initialization for the proximity thread
 	//ATTENTION A L'ORDRE DES APPELS DE  CES FONCTIONS !!
 
-    // inits the I2C communication
-    i2c_start();
 
-	imu_start();
+	motors_init();				//initialization of the motors
+
+	mic_start(&processAudioData);
+
+    //inits the I2C communication
+    //i2c_start();
+
+	//imu_start();
 	//start the image processing ??
 	process_image_start();
 	//start the mic audio processing  ?
-//	mic_start(&processAudioData);
-//
+
+//ush
 //	#ifdef TESTING
 //    static float send_tab[MICSAMPLESIZE];
 //    while (1) { //trying to send the PCM data to the computer, need to edit python script?
@@ -132,23 +136,19 @@ int main(void)		//clear all leds at the beggining
 //
 	//threads start
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
-	playMelodyStart();			//initialization for the melody thread
-
-	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
-
-	motors_init();				//initialization of the motors
-
+//	playMelodyStart();			//initialization for the melody thread
+//
+//	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
 
 
 
 	// starts the calibration of the sensors
-    calibrate_gyro();
-    calibrate_acc();
+//    calibrate_gyro();
+//    calibrate_acc();
 
     //%%%%%%%%%%%%%%%%%%%%%%%%%
 //
-	PanicMode_start();
-
+//	PanicMode_start();
 
 
 //
@@ -183,14 +183,14 @@ int main(void)		//clear all leds at the beggining
 //	Led_uhOh();
 
 
-	while(1){
-//		dancing_puck();
-//		danseMode(speed_main);
-//		test_main_panic();
-//		dancing_puck();
-//		Led_dance_mode();
-
-	}
+//	while(1){
+////		dancing_puck();
+////		danseMode(speed_main);
+////		test_main_panic();
+////		dancing_puck();
+////		Led_dance_mode();
+//
+//	}
 
 
 //    palTogglePad(GPIOB, GPIOB_LED_BODY);
