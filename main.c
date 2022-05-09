@@ -29,6 +29,7 @@
 
 //to use the threads and functions so that the robot can play sounds and melodies
 #include <audio/audio_thread.h>
+#include <audio/microphone.h>
 #include <audio/play_melody.h>
 #include <audio/play_sound_file.h>	//to play specific sounds from the SD card
 
@@ -40,7 +41,6 @@
 #include <process_image.h>
 
 #include <obstacle_encounter.h>	//--->>> to merge with danse_mode and proximity_sensors maybe
-//#include <proximity_sensor.h> -->> will delete  this file
 #include <danse_mode.h>
 #include <panic_mode.h>
 
@@ -105,7 +105,7 @@ int main(void)		//clear all leds at the beggining
     dac_start();
     //start the RGB LEDs
 	spi_comm_start();
-//	initial_proximity();		//initialization for the proximity thread
+	initial_proximity();		//initialization for the proximity thread
 	//ATTENTION A L'ORDRE DES APPELS DE  CES FONCTIONS !!
 
 
@@ -114,7 +114,7 @@ int main(void)		//clear all leds at the beggining
 	mic_start(&processAudioData);
 
     //inits the I2C communication
-    //i2c_start();
+    i2c_start();
 
 	//imu_start();
 	//start the image processing ??
