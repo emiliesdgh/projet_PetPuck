@@ -44,24 +44,49 @@ void motor_set_danse_speed(float speed_r, float speed_l)
 
 }
 
-void dancing_puck(void){
+//void dancing_puck(void){
+//
+//	motor_set_danse_speed(10, 10);
+//
+//	palTogglePad(GPIOB, GPIOB_LED_BODY);
+//	chThdSleepMilliseconds(200);
+//	palTogglePad(GPIOB, GPIOB_LED_BODY);
+//	chThdSleepMilliseconds(200);
+//
+//	motor_set_danse_speed(-10, -10);
+////	chThdSleepMilliseconds(400); //--> a ajouter seulement si  on met  pas les leds  et changer le premier sleep  a 400 aussi
+//
+//	palTogglePad(GPIOB, GPIOB_LED_BODY);
+//	chThdSleepMilliseconds(200);
+//	palTogglePad(GPIOB, GPIOB_LED_BODY);
+//	chThdSleepMilliseconds(200);
+//
+//	motor_set_danse_speed(0, 0);
+//}
 
-	motor_set_danse_speed(10, 10);
 
-	palTogglePad(GPIOB, GPIOB_LED_BODY);
-	chThdSleepMilliseconds(200);
-	palTogglePad(GPIOB, GPIOB_LED_BODY);
-	chThdSleepMilliseconds(200);
+void dancing_puck(int8_t value){
 
-	motor_set_danse_speed(-10, -10);
+	if(value==1){
+
+		motor_set_danse_speed(10, 10);
+
+		palTogglePad(GPIOB, GPIOB_LED_BODY);
+		chThdSleepMilliseconds(200);
+		palTogglePad(GPIOB, GPIOB_LED_BODY);
+		chThdSleepMilliseconds(200);
+
+		motor_set_danse_speed(-10, -10);
 //	chThdSleepMilliseconds(400); //--> a ajouter seulement si  on met  pas les leds  et changer le premier sleep  a 400 aussi
 
-	palTogglePad(GPIOB, GPIOB_LED_BODY);
-	chThdSleepMilliseconds(200);
-	palTogglePad(GPIOB, GPIOB_LED_BODY);
-	chThdSleepMilliseconds(200);
+		palTogglePad(GPIOB, GPIOB_LED_BODY);
+		chThdSleepMilliseconds(200);
+		palTogglePad(GPIOB, GPIOB_LED_BODY);
+		chThdSleepMilliseconds(200);
+	}else{
 
-	motor_set_danse_speed(0, 0);
+		motor_set_danse_speed(0, 0);
+	}
 }
 
 

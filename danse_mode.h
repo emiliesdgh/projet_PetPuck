@@ -10,7 +10,7 @@
 
 void motor_set_danse_speed(float speed_r, float speed_l);
 
-void dancing_puck(void);
+void dancing_puck(int8_t value);
 
 void GoodMorning_motors(void);
 
