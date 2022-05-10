@@ -30,11 +30,11 @@
 
 //include our files
 #include <main.h>
-#include <obstacle_encounter.h>
 #include <puck_led.h>
 
 
 #include <panic_mode.h>
+#include <puck_movement.h>
 
 //l'axe Z est l'axe en direction de devant
 //l'axe Y est l'axe en direction de coté

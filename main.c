@@ -40,12 +40,12 @@
 #include <puck_led.h>
 #include <process_image.h>
 
-#include <obstacle_encounter.h>	//--->>> to merge with danse_mode and proximity_sensors maybe
 #include <danse_mode.h>
 #include <panic_mode.h>
 
 //include the file .h for the main
 #include <main.h>
+#include <puck_movement.h>	//--->>> to merge with danse_mode and proximity_sensors maybe
 
 
 void SendUint8ToComputer(uint8_t* data, uint16_t size)

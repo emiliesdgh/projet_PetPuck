@@ -16,8 +16,7 @@ CSRC += ./main.c \
 		./fft.c \
 		./puck_led.c \
 		./process_image.c \
-		./obstacle_encounter.c \
-		./danse_mode.c \
+		./puck_movement.c \
 		./panic_mode.c \
 
 #Header folders to include
