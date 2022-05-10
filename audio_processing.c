@@ -12,6 +12,7 @@
 #include <arm_math.h>
 #include <danse_mode.h>
 #include <puck_led.h>
+#include <motors.h> //?
 
 
 //semaphore
@@ -39,7 +40,7 @@ static int8_t dance_flag = 0;
 
 void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_samples (how much is it?) bc i never call it w/ something
 
-	clear_leds();
+	//clear_leds();
 
 	/*
 	*	We get 160 samples per mic every 10ms
@@ -61,7 +62,7 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 
 	static uint8_t rms_above_event = 0;
 
-	static int32_t direction = 0;
+	static int8_t direction = 0;
 
 	//static int32_t micR_rms_value_sum = 0;
 	//static int32_t micR_rms_avg = 0;
@@ -154,40 +155,47 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 			/*stopped giving an error when i changed MICSAMPLESIZE to 24 (low value), still gave error w/ 160*/
 
 			int32_t shiftRL = 0;
-			float maxRL = 0;
-			for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
-				if (correlation[i] > maxRL) { //R-L --> L lags R by shiftRL??
-					shiftRL = i - MICSAMPLESIZE - 1;//(int)CORRELATIONSIZE/2;//- MICSAMPLESIZE/2;
-					maxRL = correlation[i];
-					correlation[i] = 0;
-				}
-			}
+			shiftRL = get_shift(correlation); //make a function?
+
+			//*********** test if the function works properly before deleting!!!!!********/
+//			float maxRL = 0;
+//			for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
+//				if (correlation[i] > maxRL) { //R-L --> L lags R by shiftRL??
+//					shiftRL = i - MICSAMPLESIZE - 1;//(int)CORRELATIONSIZE/2;//- MICSAMPLESIZE/2;
+//					maxRL = correlation[i];
+//					correlation[i] = 0;
+//				}
+//			}
 
 			//chprintf((BaseSequentialStream *)&SDU1, "shiftRL is: %d\n", shiftRL);
 
 			arm_correlate_f32(micLinput, MICSAMPLESIZE, micBinput, MICSAMPLESIZE, correlation);
 			int32_t shiftLB = 0;
-			float maxLB = 0;
-			for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
-				if (correlation[i] > maxLB) { //L-B
-					shiftLB = i - MICSAMPLESIZE - 1;//(int)CORRELATIONSIZE/2; //- MICSAMPLESIZE/2;
-					maxLB = correlation[i];
-					correlation[i] = 0;
-				}
-			}
+			shiftLB = get_shift(correlation);
+			//*********** test if the function works properly before deleting!!!!!********/
+//			float maxLB = 0;
+//			for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
+//				if (correlation[i] > maxLB) { //L-B
+//					shiftLB = i - MICSAMPLESIZE - 1;//(int)CORRELATIONSIZE/2; //- MICSAMPLESIZE/2;
+//					maxLB = correlation[i];
+//					correlation[i] = 0;
+//				}
+//			}
 
 			//chprintf((BaseSequentialStream *)&SDU1, "shiftLB is: %d\n", shiftLB);
 
 			arm_correlate_f32(micRinput, MICSAMPLESIZE, micBinput, MICSAMPLESIZE, correlation);
 			int32_t shiftRB = 0;
-			float maxRB = 0;
-			for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
-				if (correlation[i] > maxRB) { //L-B
-					shiftRB = i - MICSAMPLESIZE - 1;//(int)CORRELATIONSIZE/2; //- MICSAMPLESIZE/2;
-					maxRB = correlation[i];
-					correlation[i] = 0;
-				}
-			}
+			shiftRB = get_shift(correlation);
+			//*********** test if the function works properly before deleting!!!!!********/
+//			float maxRB = 0;
+//			for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
+//				if (correlation[i] > maxRB) { //L-B
+//					shiftRB = i - MICSAMPLESIZE - 1;//(int)CORRELATIONSIZE/2; //- MICSAMPLESIZE/2;
+//					maxRB = correlation[i];
+//					correlation[i] = 0;
+//				}
+//			}
 
 			//chprintf((BaseSequentialStream *)&SDU1, "shiftRB is: %d\n", shiftRB);
 
@@ -223,13 +231,15 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 			//chprintf((BaseSequentialStream *)&SDU1, "cond 2\n");
 			//follow_direction();
 			//palClearPad(GPIOB, GPIOB_LED_BODY);
-			int32_t direction1 = direction - 1;
+			//int8_t direction1 = direction - 1;
 			//LedSet_ALL(direction1, 1);
-			//chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction1);
+			chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
 			dance_flag = 0; //no dancing
 			rms_above_event = 0;
 			count = 0;
-			//chThdSleepMilliseconds(2000);
+			run_to_direction(direction);
+			direction = 0;		//reset the direction
+//			chThdSleepMilliseconds(2000);
 		} else {
 			//chprintf((BaseSequentialStream *)&SDU1, "cond 3\n");
 			dance_flag = 0; //no dancing
@@ -237,7 +247,7 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 			count = 0;
 		}
 
-		chprintf((BaseSequentialStream *)&SDU1, "flag is%d\n", dance_flag);
+		//chprintf((BaseSequentialStream *)&SDU1, "flag is%d\n", dance_flag);
 		//dancing_puck(dance_flag);
 	}
 
@@ -419,8 +429,8 @@ float* get_audio_buffer_ptr(BUFFER_NAME_t name){ //to try and get PCM data
 	}
 }
 
-int32_t get_direction(int32_t shift1, int32_t shift2, int32_t shift3) {
-	int32_t direction = 0;
+int8_t get_direction(int32_t shift1, int32_t shift2, int32_t shift3) {
+	int8_t direction = 0;
 	//shift1: RL //shift2: LB //shift3: RB
 	//int8_t direction1 = 0;
 	//int8_t direction2 = 0;
@@ -430,14 +440,12 @@ int32_t get_direction(int32_t shift1, int32_t shift2, int32_t shift3) {
 	} else if (shift1 <= -MAXDELTA1) {
 		direction = 7;
 	} else if (shift1 < 0) {
-		//direction1 = 8;
 		if (shift2 > 0) {
 			direction = 8;
 		} else {
 			direction = 6;
 		}
-	} else if (shift1 < 0) {
-		//direction1 = 2;
+	} else if (shift1 > 0) { //changed sig
 		if (shift3 > 0) {
 			direction = 2;
 		} else {
@@ -485,5 +493,111 @@ int32_t get_direction(int32_t shift1, int32_t shift2, int32_t shift3) {
 //		if (angle < 0)
 //			angle = 2*PI + angle;
 	return direction;
+}
+
+int32_t get_shift(float *carray) {
+	float32_t cmax = 0;
+	int32_t shift = 0;
+	for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
+		if (carray[i] > cmax) {
+			shift = i - MICSAMPLESIZE - 1;
+			cmax = carray[i];
+			carray[i] = 0;
+		}
+	}
+	return shift;
+}
+
+void rotate_to_led(int8_t led) {
+    switch (led) {
+        case 1:
+        	rotate_to_angle(LED1ANGLE);
+            break;
+        case 2:
+            rotate_to_angle(LED2ANGLE);
+            break;
+        case 3:
+            rotate_to_angle(LED3ANGLE);
+            break;
+        case 4:
+            rotate_to_angle(LED4ANGLE);
+            break;
+        case 5:
+            rotate_to_angle(LED5ANGLE);
+            break;
+        case 6:
+            rotate_to_angle(LED6ANGLE);
+            break;
+        case 7:
+            rotate_to_angle(LED7ANGLE);
+            break;
+        case 8:
+            rotate_to_angle(LED8ANGLE);
+            break;
+        default:
+            break;
+    }
+}
+
+void run_to_direction(int8_t direction) {
+	rotate_to_led(direction);
+	move_straight();
+}
+
+void rotate_to_angle(int16_t angle) {
+//	right_motor_set_speed(STOP);
+//	left_motor_set_speed(STOP);
+    //right_motor_set_pos(COUNTER_INIT);
+	int32_t steps = 0;
+    steps = angle_to_step(angle);
+	chprintf((BaseSequentialStream *)&SDU1, "steps is: %d\n", steps);
+    if (steps != 0) { 		//if = 0, only needs to go straight
+    	if (angle > LED5ANGLE) {
+			//turn anticlockwise
+    		steps = steps - HALFTURNROBOT;
+			while (right_motor_get_pos() <= steps) {
+				right_motor_set_speed(+TURNSPEED);
+				left_motor_set_speed(-TURNSPEED);
+				int32_t position = right_motor_get_pos();
+				chprintf((BaseSequentialStream *)&SDU1, "position is: %d\n", position);
+			} //while (right_motor_get_pos() < steps);// {}
+		} else {
+			//turn clockwise
+			while (left_motor_get_pos() <= steps) {
+				right_motor_set_speed(-TURNSPEED);
+				left_motor_set_speed(+TURNSPEED);
+				//chprintf((BaseSequentialStream *)&SDU1, "turning cc: %d\n", angle);
+			} //while (left_motor_get_pos() < steps);// {}
+		}
+    }
+	right_motor_set_pos(STOP);
+	left_motor_set_pos(STOP);
+	int32_t position2 = left_motor_get_pos();
+	chprintf((BaseSequentialStream *)&SDU1, "position2 is: %d\n", position2);
+
+//	right_motor_set_speed(STOP);
+//	left_motor_set_speed(STOP);
+}
+
+
+int32_t angle_to_step(int16_t angle) {
+    return (STEPPERDEGREE*angle); //constrainAngle(angle);
+}
+
+int distance_to_step(int distance) { //not sure this function is useful for me
+    return (STEPPERCM*distance);
+}
+
+void move_straight(void) {
+	int32_t cm = 0;
+	// move straight
+    do {
+    	right_motor_set_speed(+TURNSPEED);
+    	left_motor_set_speed(+TURNSPEED);
+    	cm++;
+    } while (cm < XCMSTEP);
+
+	right_motor_set_speed(STOP);
+	left_motor_set_speed(STOP);
 }
 

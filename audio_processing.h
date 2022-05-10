@@ -2,16 +2,38 @@
 #define AUDIO_PROCESSING_H
 
 
-#define FFT_SIZE 	1024
+#define FFT_SIZE 		1024
 #define MICSAMPLESIZE	1600 //320 //24 //1600 //1024 //160
-#define CORRELATIONSIZE 	(2*MICSAMPLESIZE-1)
-#define NOMUSIC		30
-#define WHISTLE		250
-#define CLAP	800
-#define LONGEVENT	140
-#define EVENT	120
-#define LOUD	100
-#define PI	3.14
+#define CORRELATIONSIZE (2*MICSAMPLESIZE-1)
+#define NOMUSIC			30
+#define WHISTLE			250
+#define CLAP			800
+#define LONGEVENT		140
+#define EVENT			100
+#define LOUD			80
+#define PI				3.14
+#define WHEELPERIMETER	12.9 //in cm
+#define CIRCLE			360
+#define ONETURNSTEP		1000 //20 steps/rev for the motor, 50:1 reduction gear: 20*50 steps for a complete wheel turn
+#define ONETURNROBOT	1290 //the two wheels are 53mm apart so one full rotation is 53*pi, which is 166.5mm.
+							 //Divided by the wheel perimeter, times the number of step in one revolution //not sure about the value
+							 //pi*5.3*(1/12.9)*1000
+#define STEPPERDEGREE	3.58 // 3.58  = (ONETURNROBOT/CIRCLE)
+#define STEPPERCM		77.5 // 77.5 = (ONETURNSTEP/WHEELPERIMETER)
+#define XCMSTEP			(STEPPERCM*1000)
+#define HALFTURNROBOT	646
+#define TURNSPEED		500
+#define LED1ANGLE		0
+#define LED2ANGLE		45
+#define LED3ANGLE		90
+#define LED4ANGLE		135
+#define LED5ANGLE		180
+#define LED6ANGLE		225
+#define LED7ANGLE		270
+#define LED8ANGLE		315
+#define RIGHTTURNLIMIT	(LED5ANGLE*STEPPERDEGREE)
+#define STOP			0 //stop speed (stop moving motors)
+
 
 //max # of samples that can exist between 2 signals
 #define MAXDELTA1	2//3//6//3 //2.8		//sampling frequency[Hz]*dist between micros[cm] / speed of sound [cm/s]
@@ -58,9 +80,19 @@ void follow_direction(void);
 
 void get_micro_RMS(float *micro_ID, uint16_t sample_size, uint32_t micro_rms);
 
-int32_t get_direction(int32_t shift1, int32_t shift2, int32_t shift3);
+int8_t get_direction(int32_t shift1, int32_t shift2, int32_t shift3);
 
 void turn_led(float angle);
+
+int32_t get_shift(float *carray);
+
+/*** to put in a different file***/
+
+void run_to_direction(int8_t direction);
+void rotate_to_angle(int16_t angle);
+int distance_to_step(int distance);
+int32_t angle_to_step(int16_t angle);
+void move_straight(void);
 
 /*
 *	Returns the pointer to the BUFFER_NAME_t buffer asked
