@@ -95,9 +95,7 @@ static THD_FUNCTION(DancingPuck, arg){
 	while(1){
 		time = chVTGetSystemTime();
 
-		distance_prox = VL53L0X_get_dist_mm();
-		ambient_testing = get_ambient_light(1);
-
+		dancing_puck();
 
 		//fréquence de 100Hz
 		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
@@ -142,61 +140,11 @@ void dancing_puck(void){
 
 			motor_set_danse_speed(-5,-5);
 			palTogglePad(GPIOB, GPIOB_LED_BODY);
-	//				chThdSleepMilliseconds(200);
+//			chThdSleepMilliseconds(200);
 		}
 		chThdSleepMilliseconds(300);
 	}
 
-//	motor_set_danse_speed(0,0);
-//	palTogglePad(GPIOB, GPIOB_LED_BODY);
-	//		dance_counter =0;
-
-//
-////	dance_counter = 0;
-//
-//	int8_t value = get_value(); //faire fonction qui retourne la valeur du dance_flag
-//
-//	if(value==1){
-//
-//		for(dance_counter=1; dance_counter<5; dance_counter++){
-//			if(dance_counter==1 || dance_counter==3){
-//
-//				motor_set_danse_speed(5,5);
-//
-//
-//			}else if(dance_counter ==2 || dance_counter ==4){
-//
-//				motor_set_danse_speed(-5,-5);
-////				chThdSleepMilliseconds(200);
-//			}
-//			chThdSleepMilliseconds(300);
-//		}
-//
-//	}else if(value==0){
-//
-//		motor_set_danse_speed(0,0);
-////		dance_counter =0;
-//	}
-//
-//	motor_set_danse(5,5,10);
-//
-//	motor_set_danse_position(PERIMETER_EPUCK/2, PERIMETER_EPUCK/2, 5, 5);
-//	 while(motor_position_reached() != POSITION_REACHED);
-
-//	motor_set_danse_speed(10, 10);
-
-//	palTogglePad(GPIOB, GPIOB_LED_BODY);
-//	chThdSleepMilliseconds(200);
-//	palTogglePad(GPIOB, GPIOB_LED_BODY);
-//	chThdSleepMilliseconds(200);
-//
-//	motor_set_danse_speed(-10, -10);
-////	chThdSleepMilliseconds(400); //--> a ajouter seulement si  on met  pas les leds  et changer le premier sleep  a 400 aussi
-//
-//	palTogglePad(GPIOB, GPIOB_LED_BODY);
-//	chThdSleepMilliseconds(200);
-//	palTogglePad(GPIOB, GPIOB_LED_BODY);
-//	chThdSleepMilliseconds(200);
 }
 //********************************************
 
@@ -260,7 +208,6 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 		if(led_flag_uhOh == 1){
 	    	uint32_t color = get_colors();
 //			playNote(NOTE_G4, 120);
-//			uhOh_LED();
 			if(color==RED){
 
 				clear_leds();
@@ -314,7 +261,7 @@ int16_t motors_speed(uint16_t distance){
 		palClearPad(GPIOB, GPIOB_LED_BODY);
 		led_flag_uhOh += 1;
 		speed = 0;
-		//call 'uh-oh'
+
 	}
 
 	return (int16_t)speed;

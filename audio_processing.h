@@ -9,8 +9,10 @@
 #define WHISTLE			250
 #define CLAP			800
 #define LONGEVENT		140
-#define EVENT			100
-#define LOUD			80
+
+#define EVENT			120
+#define LOUD			100
+
 #define PI				3.14
 #define WHEELPERIMETER	12.9 //in cm
 #define CIRCLE			360
@@ -23,6 +25,7 @@
 #define XCMSTEP			(STEPPERCM*1000)
 #define HALFTURNROBOT	646
 #define TURNSPEED		500
+
 #define LED1ANGLE		0
 #define LED2ANGLE		45
 #define LED3ANGLE		90
@@ -31,6 +34,7 @@
 #define LED6ANGLE		225
 #define LED7ANGLE		270
 #define LED8ANGLE		315
+
 #define RIGHTTURNLIMIT	(LED5ANGLE*STEPPERDEGREE)
 #define STOP			0 //stop speed (stop moving motors)
 
@@ -64,6 +68,7 @@ static const float asin_lookup[2][9] = {
 		{-PI/2, -PI/3, -PI/4, -PI/6, 0, PI/6, PI/4, PI/3, PI/2}
 };
 
+int8_t get_value(void);
 
 void processAudioData(int16_t *data, uint16_t num_samples);
 

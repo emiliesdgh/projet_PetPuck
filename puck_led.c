@@ -4,7 +4,7 @@
 #include <leds.h>
 #include <spi_comm.h>
 
-#include <danse_mode.h>
+//#include <danse_mode.h>
 #include <puck_led.h>
 
 //function to initialise the LED, put them all in state OFF
@@ -144,58 +144,6 @@ void PanicMode_LED(void){
 	}
 }
 
-void uhOh_LED(void){
-
-	for(int i=0; i<8; i++){
-
-		LedSet_ALL(i,1);
-	}
-	palTogglePad(GPIOD, GPIOD_LED_FRONT);
-
-	palTogglePad(GPIOB, GPIOB_LED_BODY);
-
-	chThdSleepMilliseconds(250);
-
-	for(int i=0; i<8; i++){
-
-		LedSet_ALL(i,0);
-	}
-	palTogglePad(GPIOD, GPIOD_LED_FRONT);
-
-	palTogglePad(GPIOB, GPIOB_LED_BODY);
-
-}
-//--->>> directly build in the dancing function
-////function to be called when robot is dancing
-//// avec les sleep, y'a trop de temps d'attente et il danse  pas très bien
-//void Led_dance_mode(void){
-//
-//	for(int j=0; j<4; j++){
-//
-//		set_led(j, 0);
-//
-//		for(int i=0; i<3; i++){
-//			toggle_rgb_led(j, i, LED_RGB_INTENSITY);
-//
-//
-//		}
-//		chThdSleepMilliseconds(100);
-//		set_led(j, 1);
-//
-//		for(int i=0; i<3; i++){
-//			toggle_rgb_led(j, i, LED_RGB_INTENSITY);
-//
-//			//set_led(i, 1);
-//		}
-//		chThdSleepMilliseconds(100);
-//
-////		for(int i=0; i<4; i++){
-////			set_led(i, 1);
-////		}
-//	}
-//
-//
-//}
 
 //function that set all LEDs to  the value chosen (value = 0 : OFF, value = 1 : ON)
 //and puts the RGB LEDs on maximum intensity in red color

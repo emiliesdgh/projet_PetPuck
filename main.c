@@ -40,7 +40,7 @@
 #include <puck_led.h>
 #include <process_image.h>
 
-#include <danse_mode.h>
+
 #include <panic_mode.h>
 
 //include the file .h for the main
