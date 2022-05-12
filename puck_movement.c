@@ -43,7 +43,7 @@ static int16_t left_speed = 0;					// in [step/s]
 static int16_t speed = 0;
 static int led_flag_uhOh = 0; //led_flag
 
-static uint16_t distance_prox = 0;
+//static uint16_t distance_prox = 0;
 static int ambient_testing = 0;
 
 //semaphore
@@ -74,7 +74,7 @@ void initial_proximity(void) {
     // Proximity sensors
     proximity_start();
     calibrate_ir();
-    proximityToStop_start();
+//    proximityToStop_start();
     chThdSleepMilliseconds(500);	//pas sur de la nécessité
 }
 
@@ -82,32 +82,32 @@ int get_ambient_testing(void){
 	return  ambient_testing;
 }
 
-
-//*********DANCING THREAD***********
-//initialization of the proximity thread
-static THD_WORKING_AREA(waDancingPuck, 2048);
-static THD_FUNCTION(DancingPuck, arg){
-
-	chRegSetThreadName(__FUNCTION__);
-	(void)arg;
-    systime_t time;
-
-	while(1){
-		time = chVTGetSystemTime();
-
-		dancing_puck();
-
-		//fréquence de 100Hz
-		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
-	}
-}
-
-//function to start the obstacle encounter thread
-void DancingPuck_start(void){
-
-    chThdCreateStatic(waDancingPuck, sizeof(waDancingPuck), NORMALPRIO, DancingPuck, NULL);
-
-}
+//
+////*********DANCING THREAD***********
+////initialization of the proximity thread
+//static THD_WORKING_AREA(waDancingPuck, 2048);
+//static THD_FUNCTION(DancingPuck, arg){
+//
+//	chRegSetThreadName(__FUNCTION__);
+//	(void)arg;
+//    systime_t time;
+//
+//	while(1){
+//		time = chVTGetSystemTime();
+//
+//		dancing_puck();
+//
+//		//fréquence de 100Hz
+//		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
+//	}
+//}
+//
+////function to start the obstacle encounter thread
+//void DancingPuck_start(void){
+//
+//    chThdCreateStatic(waDancingPuck, sizeof(waDancingPuck), NORMALPRIO, DancingPuck, NULL);
+//
+//}
 // fonction qui fait bouger le moteur avec la vitesse demandée
 void motor_set_danse_speed(float speed_r, float speed_l)
 {
@@ -147,40 +147,40 @@ void dancing_puck(void){
 
 }
 //********************************************
-
-//*********PROXIMITY TO STOP THREAD***********
-//initialization of the proximity thread
-static THD_WORKING_AREA(waProximityToStop, 2048);
-static THD_FUNCTION(ProximityToStop, arg){
-
-	chRegSetThreadName(__FUNCTION__);
-	(void)arg;
-    systime_t time;
-
-	while(1){
-		time = chVTGetSystemTime();
-
-		distance_prox = VL53L0X_get_dist_mm();
-		ambient_testing = get_ambient_light(1);
-
-
-		//fréquence de 100Hz
-		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
-	}
-}
-
-//function to start the obstacle encounter thread
-void proximityToStop_start(void){
-
-    chThdCreateStatic(waProximityToStop, sizeof(waProximityToStop), NORMALPRIO, ProximityToStop, NULL);
-
-}
-
-//function to get the distance between the robot and a possible obstacle
-//sent to function that checks this distance in file obtacle_encounter.c
-uint16_t get_distance_toStop(void){
-	return distance_prox;
-}
+//
+////*********PROXIMITY TO STOP THREAD***********
+////initialization of the proximity thread
+//static THD_WORKING_AREA(waProximityToStop, 2048);
+//static THD_FUNCTION(ProximityToStop, arg){
+//
+//	chRegSetThreadName(__FUNCTION__);
+//	(void)arg;
+//    systime_t time;
+//
+//	while(1){
+//		time = chVTGetSystemTime();
+//
+//		distance_prox = VL53L0X_get_dist_mm();
+//		ambient_testing = get_ambient_light(1);
+//
+//
+//		//fréquence de 100Hz
+//		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
+//	}
+//}
+//
+////function to start the obstacle encounter thread
+//void proximityToStop_start(void){
+//
+//    chThdCreateStatic(waProximityToStop, sizeof(waProximityToStop), NORMALPRIO, ProximityToStop, NULL);
+//
+//}
+//
+////function to get the distance between the robot and a possible obstacle
+////sent to function that checks this distance in file obtacle_encounter.c
+//uint16_t get_distance_toStop(void){
+//	return distance_prox;
+//}
 //********************************************
 
 //*********OBSTACLE ENCOUNTER THREAD***********
@@ -198,9 +198,11 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 		time = chVTGetSystemTime();
 
 		//need function to modify the value of distance_mm which will be created in file proximity_sensor
-		distance_mm = get_distance_toStop();
+		distance_mm  = VL53L0X_get_dist_mm();
 
 		speed = motors_speed(distance_mm);
+
+//		move_straight(speed);
 
 		left_motor_set_speed(speed);
 		right_motor_set_speed(speed);
@@ -241,7 +243,7 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 //to be called in thread of process audio for when he needs to be moving, not on it's own !!!
 void ObstacleEncounter_start(void){
 
-	chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO, ObstacleEncounter, NULL);
+	chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO+1, ObstacleEncounter, NULL);
 
 }
 
