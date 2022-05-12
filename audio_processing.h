@@ -9,9 +9,9 @@
 #define WHISTLE			250
 #define CLAP			800
 #define LONGEVENT		140
-#define EVENT			100
-#define LOUD			80
-#define PI				3.14
+#define EVENT			80//140
+#define LOUD			150//250
+//#define PI				3.14
 #define WHEELPERIMETER	12.9 //in cm
 #define CIRCLE			360
 #define ONETURNSTEP		1000 //20 steps/rev for the motor, 50:1 reduction gear: 20*50 steps for a complete wheel turn
@@ -58,11 +58,11 @@ typedef enum { //this is to try and get PCM data
 //	BACK_OUTPUT
 } BUFFER_NAME_t;
 
-
-static const float asin_lookup[2][9] = {
-		{-1, -0.87 /*-sqrt3/2*/, -0.71 /*-sqrt2/2*/, -0.5, 0, 0.5, 0.71, -0.87, 1},
-		{-PI/2, -PI/3, -PI/4, -PI/6, 0, PI/6, PI/4, PI/3, PI/2}
-};
+//
+//static const float asin_lookup[2][9] = {
+//		{-1, -0.87 /*-sqrt3/2*/, -0.71 /*-sqrt2/2*/, -0.5, 0, 0.5, 0.71, -0.87, 1},
+//		{-PI/2, -PI/3, -PI/4, -PI/6, 0, PI/6, PI/4, PI/3, PI/2}
+//};
 
 
 void processAudioData(int16_t *data, uint16_t num_samples);
@@ -80,7 +80,7 @@ void follow_direction(void);
 
 void get_micro_RMS(float *micro_ID, uint16_t sample_size, uint32_t micro_rms);
 
-int8_t get_direction(int32_t shift1, int32_t shift2, int32_t shift3);
+int get_direction(int32_t shift1, int32_t shift2, int32_t shift3);
 
 void turn_led(float angle);
 
@@ -88,11 +88,13 @@ int32_t get_shift(float *carray);
 
 /*** to put in a different file***/
 
-void run_to_direction(int8_t direction);
-void rotate_to_angle(int16_t angle);
-int distance_to_step(int distance);
-int32_t angle_to_step(int16_t angle);
+void run_to_direction(int direction);
+void rotate_to_angle(int angle);
+//int distance_to_step(int distance);
+int angle_to_step(int angle);
 void move_straight(void);
+void stay_put(void);
+
 
 /*
 *	Returns the pointer to the BUFFER_NAME_t buffer asked

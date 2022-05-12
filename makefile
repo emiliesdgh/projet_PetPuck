@@ -19,6 +19,7 @@ CSRC += ./main.c \
 		./obstacle_encounter.c \
 		./danse_mode.c \
 		./panic_mode.c \
+		./control.c\
 
 #Header folders to include
 INCDIR += 
