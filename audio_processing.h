@@ -9,30 +9,30 @@
 #define WHISTLE			250
 #define CLAP			800
 #define LONGEVENT		140
-#define EVENT			80//140
+#define EVENT			140//140
 #define LOUD			150//250
 //#define PI				3.14
-#define WHEELPERIMETER	12.9 //in cm
-#define CIRCLE			360
-#define ONETURNSTEP		1000 //20 steps/rev for the motor, 50:1 reduction gear: 20*50 steps for a complete wheel turn
-#define ONETURNROBOT	1290 //the two wheels are 53mm apart so one full rotation is 53*pi, which is 166.5mm.
-							 //Divided by the wheel perimeter, times the number of step in one revolution //not sure about the value
-							 //pi*5.3*(1/12.9)*1000
-#define STEPPERDEGREE	3.58 // 3.58  = (ONETURNROBOT/CIRCLE)
-#define STEPPERCM		77.5 // 77.5 = (ONETURNSTEP/WHEELPERIMETER)
-#define XCMSTEP			(STEPPERCM*1000)
-#define HALFTURNROBOT	646
-#define TURNSPEED		500
-#define LED1ANGLE		0
-#define LED2ANGLE		45
-#define LED3ANGLE		90
-#define LED4ANGLE		135
-#define LED5ANGLE		180
-#define LED6ANGLE		225
-#define LED7ANGLE		270
-#define LED8ANGLE		315
-#define RIGHTTURNLIMIT	(LED5ANGLE*STEPPERDEGREE)
-#define STOP			0 //stop speed (stop moving motors)
+//#define WHEELPERIMETER	12.9 //in cm
+//#define CIRCLE			360
+//#define ONETURNSTEP		1000 //20 steps/rev for the motor, 50:1 reduction gear: 20*50 steps for a complete wheel turn
+//#define ONETURNROBOT	1290 //the two wheels are 53mm apart so one full rotation is 53*pi, which is 166.5mm.
+//							 //Divided by the wheel perimeter, times the number of step in one revolution //not sure about the value
+//							 //pi*5.3*(1/12.9)*1000
+//#define STEPPERDEGREE	3.58 // 3.58  = (ONETURNROBOT/CIRCLE)
+//#define STEPPERCM		77.5 // 77.5 = (ONETURNSTEP/WHEELPERIMETER)
+//#define XCMSTEP			(STEPPERCM*1000)
+//#define HALFTURNROBOT	646
+//#define TURNSPEED		500
+//#define LED1ANGLE		0
+//#define LED2ANGLE		45
+//#define LED3ANGLE		90
+//#define LED4ANGLE		135
+//#define LED5ANGLE		180
+//#define LED6ANGLE		225
+//#define LED7ANGLE		270
+//#define LED8ANGLE		315
+//#define RIGHTTURNLIMIT	(LED5ANGLE*STEPPERDEGREE)
+//#define STOP			0 //stop speed (stop moving motors)
 
 
 //max # of samples that can exist between 2 signals
@@ -80,20 +80,28 @@ void follow_direction(void);
 
 void get_micro_RMS(float *micro_ID, uint16_t sample_size, uint32_t micro_rms);
 
-int get_direction(int32_t shift1, int32_t shift2, int32_t shift3);
+uint8_t get_direction(int32_t shift1, int32_t shift2, int32_t shift3);
 
 void turn_led(float angle);
 
 int32_t get_shift(float *carray);
 
+void set_allowed_to_move(uint8_t allowed);
+
+uint8_t get_allowed_to_move(void);
+
 /*** to put in a different file***/
 
-void run_to_direction(int direction);
-void rotate_to_angle(int angle);
-//int distance_to_step(int distance);
-int angle_to_step(int angle);
-void move_straight(void);
-void stay_put(void);
+//void run_to_direction(uint8_t direction);
+//void rotate_to_angle(int angle);
+////int distance_to_step(int distance);
+//int angle_to_step(int angle);
+//void move_straight(void);
+//void stay_put(void);
+
+//for control
+//void set_robot_moves(uint8_t new_mode);
+//uint8_t get_robot_moves (void);
 
 
 /*
