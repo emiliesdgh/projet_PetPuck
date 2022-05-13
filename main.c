@@ -91,8 +91,8 @@ static void serial_start(void)
 
 int main(void)		//clear all leds at the beggining
 {
-	static thread_reference_t trp = NULL;
-	static thread_t *Controlp;
+//	static thread_reference_t trp = NULL;
+//	static thread_t *Controlp;
     halInit();
     chSysInit();
     mpu_init();
@@ -120,10 +120,11 @@ int main(void)		//clear all leds at the beggining
     //inits the I2C communication
     i2c_start();
 
-	//imu_start();
+	imu_start();
 	//start the image processing ??
 	process_image_start();
 	//start the mic audio processing  ?
+	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
 
 //ush
 //	#ifdef TESTING
@@ -142,11 +143,11 @@ int main(void)		//clear all leds at the beggining
 	//%%%%%%%%%%%%%%%%%%%%%%%%%
 //	playMelodyStart();			//initialization for the melody thread
 //
-//	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
 
 
 
-	// starts the calibration of the sensors
+
+	//starts the calibration of the sensors
 //    calibrate_gyro();
 //    calibrate_acc();
 

@@ -34,7 +34,7 @@
 //include our files
 #include <main.h>
 #include <puck_led.h>
-#include <audio_processing.h>
+//#include <audio_processing.h>
 #include <puck_movement.h>
 
 
@@ -42,6 +42,7 @@
 static int16_t right_speed = 0;					// in [step/s]
 static int16_t left_speed = 0;					// in [step/s]
 static int16_t speed = 0;
+
 static int led_flag_uhOh = 0; //led_flag
 
 
@@ -62,82 +63,6 @@ static float puck_orientation2 = 0;
 static float puck_inclination2 = 0;
 
 static float accel_total = 0;
-
-
-int8_t get_inclination(imu_msg_t *imu_values){
-
-
-	//create a pointer to the array for shorter name
-	float *accel = imu_values->acceleration;
-
-	float *accel_filtered = imu_values->acc_filtered;
-
-
-
-	float *gyro = imu_values->gyro_rate;
-
-	int8_t no_panic = 0;
-	int8_t panic = 1;
-
-	float acc_x = get_acceleration(accel[X_AXIS]);
-
-	float acc_x_2 = get_acc_filtered(accel[X_AXIS],5);
-
-
-
-
-	float acc_y = accel[Y_AXIS];
-	float acc_z = accel[Z_AXIS];
-
-	float acc_x_f = accel_filtered[X_AXIS];
-	float acc_y_f = accel_filtered[Y_AXIS];
-	float acc_z_f = accel_filtered[Z_AXIS];
-
-	float gyro_z = gyro[Z_AXIS];
-
-	float acc_x_y_f = sqrtf( (float)((acc_x_f * acc_x_f) + (acc_y_f * acc_y_f) ));
-
-	puck_inclination_f = 90.0 - atan2f((float)(acc_z_f),(float)( acc_x_y_f)) * CST_RADIAN;
-	puck_orientation_f = 180 - puck_inclination_f;
-//
-//
-	accel_total = sqrtf((float)((acc_x * acc_x) + (acc_y * acc_y) + (acc_z * acc_z)));
-
-	chprintf((BaseSequentialStream *)&SDU1, "accel_total   : %f\n", accel_total);
-	chprintf((BaseSequentialStream *)&SDU1, "acc_x   : %f\n", acc_x);
-	chprintf((BaseSequentialStream *)&SDU1, "acc_y   : %f\n", acc_y);
-	chprintf((BaseSequentialStream *)&SDU1, "acc_z   : %f\n", acc_z);
-
-
-//	chprintf((BaseSequentialStream *)&SDU1, "puck_orientation_f   : %d\n", puck_orientation_f);
-
-	float acc_x_y = sqrtf( (float)((acc_x * acc_x) + (acc_y * acc_y) ));
-
-	puck_inclination = 90.0 - atan2f((float)(acc_z),(float)( acc_x_y)) * CST_RADIAN;
-	puck_orientation = 180 - puck_inclination;
-
-//	puck_inclination1 = (atan2f((float)(acc_x), (float)(acc_y)) * CST_RADIAN) + 180.0;
-//	puck_orientation1 = 180 - puck_inclination1;
-//
-//	puck_inclination2 = 90.0 - atan2f((float)(acc_z),(float)(acc_y)) * CST_RADIAN;
-//	puck_orientation2 = 180 - puck_inclination2;
-//
-//	chprintf((BaseSequentialStream *)&SDU1, "acc x y  : %f\n", acc_x_y);
-////
-//	chprintf((BaseSequentialStream *)&SDU1, "puck_inclination  : %f\n", puck_inclination);
-////
-//	chprintf((BaseSequentialStream *)&SDU1, "puck_inclination 1 : %f\n", puck_inclination1);
-
-	if(puck_orientation > 10){
-
-		return panic;
-
-	}else{
-		return no_panic;
-	}
-}
-
-
 
 //static uint16_t distance_prox = 0;
 static int ambient_testing = 0;
@@ -237,9 +162,9 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 
 		time = chVTGetSystemTime();
         //wait for new measures to be published
-        messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
-
-        led_flag_panic = get_inclination(&imu_values);
+//        messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
+//
+//        led_flag_panic = get_inclination(&imu_values);
 
 
 		//need function to modify the value of distance_mm which will be created in file proximity_sensor
@@ -247,28 +172,31 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 
 		speed = motors_speed(distance_mm);
 
-		left_motor_set_speed(speed);
-		right_motor_set_speed(speed);
+//		if (speed==0){
+//			left_motor_set_speed(speed);
+//			right_motor_set_speed(speed);
+//		}
+
 
 //		chprintf((BaseSequentialStream *)&SDU1, "orientation : %f\n", puck_orientation);
 
 //		move_straight(speed);
 
 //
-        if(led_flag_panic == 1){
-////        dac_play(NOTE_CS7); //-->>> bonne note mais pas pour  les tests lol
-//        	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol et  plutot le mettre ici qu'au dessus
+//        if(led_flag_panic == 1){
+//        	dac_play(NOTE_CS7); //-->>> bonne note mais pas pour  les tests lol
+////        	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol et  plutot le mettre ici qu'au dessus
 //        	PanicMode_LED();
-        	// et stop les moteurs
-        	speed = 0;
-        	palSetPad(GPIOD, GPIOD_LED_FRONT);
-        	palClearPad(GPIOB, GPIOB_LED_BODY);
-
-        }else{
-
-        	dac_stop();
-        	palClearPad(GPIOD, GPIOD_LED_FRONT);
-        }
+//        	// et stop les moteurs
+//        	speed = 0;
+////        	palSetPad(GPIOD, GPIOD_LED_FRONT);
+////        	palClearPad(GPIOB, GPIOB_LED_BODY);
+//
+//        }else{
+//
+//        	dac_stop();
+////        	palClearPad(GPIOD, GPIOD_LED_FRONT);
+//        }
 
 		if(led_flag_uhOh == 1){
 	    	uint32_t color = get_colors();
@@ -308,7 +236,7 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 //to be called in thread of process audio for when he needs to be moving, not on it's own !!!
 void ObstacleEncounter_start(void){
 
-	chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO+1, ObstacleEncounter, NULL);
+	chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO, ObstacleEncounter, NULL);
 
 }
 
@@ -317,7 +245,7 @@ int16_t motors_speed(uint16_t distance){
 
 	if(distance > DISTANCE_MIN){
 
-		speed = SPEED_MAX;
+//		speed = SPEED_MAX;
 		palSetPad(GPIOB, GPIOB_LED_BODY);//-->>test sans les moteurs
 //		speed = 0;
 
@@ -331,6 +259,10 @@ int16_t motors_speed(uint16_t distance){
 	}
 
 	return (int16_t)speed;
+}
+
+int get_led_flag_uhOh(void) {
+	return led_flag_uhOh;
 }
 
 uint32_t get_colors(void){
@@ -368,3 +300,81 @@ uint32_t get_colors(void){
 	}
 }
 //********************************************
+
+
+
+int8_t get_inclination(imu_msg_t *imu_values){
+
+
+	//create a pointer to the array for shorter name
+	float *accel = imu_values->acceleration;
+
+	float *accel_filtered = imu_values->acc_filtered;
+
+
+
+	float *gyro = imu_values->gyro_rate;
+
+	int8_t no_panic = 0;
+	int8_t panic = 1;
+
+	float acc_x = get_acceleration(accel[X_AXIS]);
+
+	float acc_x_2 = get_acc_filtered(accel[X_AXIS],5);
+
+
+
+
+	float acc_y = accel[Y_AXIS];
+	float acc_z = accel[Z_AXIS];
+
+	float acc_x_f = accel_filtered[X_AXIS];
+	float acc_y_f = accel_filtered[Y_AXIS];
+	float acc_z_f = accel_filtered[Z_AXIS];
+
+	float gyro_z = gyro[Z_AXIS];
+
+	float acc_x_y_f = sqrtf( (float)((acc_x_f * acc_x_f) + (acc_y_f * acc_y_f) ));
+
+	puck_inclination_f = 90.0 - atan2f((float)(acc_z_f),(float)( acc_x_y_f)) * CST_RADIAN;
+	puck_orientation_f = 180 - puck_inclination_f;
+//
+//
+	accel_total = sqrtf((float)((acc_x * acc_x) + (acc_y * acc_y) + (acc_z * acc_z)));
+
+	chprintf((BaseSequentialStream *)&SDU1, "accel_total   : %f\n", accel_total);
+	chprintf((BaseSequentialStream *)&SDU1, "acc_x   : %f\n", acc_x);
+	chprintf((BaseSequentialStream *)&SDU1, "acc_y   : %f\n", acc_y);
+	chprintf((BaseSequentialStream *)&SDU1, "acc_z   : %f\n", acc_z);
+
+
+//	chprintf((BaseSequentialStream *)&SDU1, "puck_orientation_f   : %d\n", puck_orientation_f);
+
+	float acc_x_y = sqrtf( (float)((acc_x * acc_x) + (acc_y * acc_y) ));
+
+	puck_inclination = 90.0 - atan2f((float)(acc_z),(float)( acc_x_y)) * CST_RADIAN;
+	puck_orientation = 180 - puck_inclination;
+
+//	puck_inclination1 = (atan2f((float)(acc_x), (float)(acc_y)) * CST_RADIAN) + 180.0;
+//	puck_orientation1 = 180 - puck_inclination1;
+//
+//	puck_inclination2 = 90.0 - atan2f((float)(acc_z),(float)(acc_y)) * CST_RADIAN;
+//	puck_orientation2 = 180 - puck_inclination2;
+//
+//	chprintf((BaseSequentialStream *)&SDU1, "acc x y  : %f\n", acc_x_y);
+////
+//	chprintf((BaseSequentialStream *)&SDU1, "puck_inclination  : %f\n", puck_inclination);
+////
+//	chprintf((BaseSequentialStream *)&SDU1, "puck_inclination 1 : %f\n", puck_inclination1);
+
+	if(puck_orientation > 10){
+
+		return panic;
+
+	}else{
+		return no_panic;
+	}
+}
+
+
+

@@ -12,7 +12,7 @@ static uint8_t robot_moves;
 static uint8_t direction_to_follow;
 static uint8_t position_reached = 1;
 
-static THD_WORKING_AREA(waControl, 1024);
+static THD_WORKING_AREA(waControl, 2048);
 //static thread_t *Controlp;
 static THD_FUNCTION(Control, arg) {
 
@@ -20,7 +20,7 @@ static THD_FUNCTION(Control, arg) {
 	(void)arg;
 	systime_t time;
 	//Controlp=chThdGetSelfX();
-	uint8_t printing = 0;
+//	uint8_t printing = 0;
 
 	while(1) {
 		time = chVTGetSystemTime();
@@ -28,6 +28,8 @@ static THD_FUNCTION(Control, arg) {
 		switch (get_robot_moves()) {
 			case MIC:
 //				chprintf((BaseSequentialStream *)&SDU1, "casemic: %d \n", time);
+				right_motor_set_speed(STOP);
+				left_motor_set_speed(STOP);
 				set_position_reached(1);
 				//do nothing bc getting mic values?
 				break;
@@ -35,9 +37,10 @@ static THD_FUNCTION(Control, arg) {
 //				position_reached = 0;
 				while(!get_position_reached()) {
 				//three lines to test thd
-					printing = get_direction_to_follow();
-					chprintf((BaseSequentialStream *)&SDU1, "printing inside thread: %d\n", printing);
+//					printing = get_direction_to_follow();
+//					chprintf((BaseSequentialStream *)&SDU1, "printing inside thread: %d\n", printing);
 					run_to_direction(get_direction_to_follow());
+					set_position_reached(1);
 				}
 				break;
 			case DANCE:
@@ -52,7 +55,12 @@ static THD_FUNCTION(Control, arg) {
 				break;
 
 		}
+//		chprintf((BaseSequentialStream *)&SDU1, "sample num in thread: %d\n", get_sample_number());
+		if (get_sample_number() == 9) {
+			set_sample_number(0);
+		}
 		set_allowed_to_move(1);
+//		chprintf((BaseSequentialStream *)&SDU1, "sample# inside thread: %d\n", get_sample_number());
 		//100Hz
 		chThdSleepUntilWindowed(time, time + MS2ST(10));
 	}
@@ -61,7 +69,7 @@ static THD_FUNCTION(Control, arg) {
 
 
 void Control_start(void) {
-	chThdCreateStatic(waControl, sizeof(waControl), NORMALPRIO+1, Control, NULL) ;
+	chThdCreateStatic(waControl, sizeof(waControl), NORMALPRIO, Control, NULL) ;
 }
 
 void set_robot_moves(uint8_t new_mode) {
@@ -120,17 +128,17 @@ void rotate_to_led(int led) {
 }
 
 void run_to_direction(uint8_t direction) {
-	chprintf((BaseSequentialStream *)&SDU1, "inside run \n");
+//	chprintf((BaseSequentialStream *)&SDU1, "inside run \n");
 	if (0 < direction && direction < 9) {
 		rotate_to_led(direction);
 		move_straight();
-		chprintf((BaseSequentialStream *)&SDU1, "after straight \n");
-		set_position_reached(1);
+//		chprintf((BaseSequentialStream *)&SDU1, "after straight \n");
+//		set_position_reached(1);
 	}
 	else {
 		stay_put();
-		chprintf((BaseSequentialStream *)&SDU1, "didnt do shit \n");
-		set_position_reached(1);
+//		chprintf((BaseSequentialStream *)&SDU1, "didnt do shit \n");
+//		set_position_reached(1);
 
 	}
 }
@@ -179,7 +187,7 @@ void move_straight(void) {
 	right_motor_set_speed(STOP);
 	left_motor_set_speed(STOP);
 
-	while (cm < XCMSTEP) {
+	while (cm < XCMSTEP && !get_led_flag_uhOh()) {
     	right_motor_set_speed(+2*TURNSPEED);
     	left_motor_set_speed(+2*TURNSPEED);
     	cm++;

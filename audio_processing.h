@@ -9,8 +9,8 @@
 #define WHISTLE			250
 #define CLAP			800
 #define LONGEVENT		140
-#define EVENT			240//140
-#define LOUD			350//250
+#define EVENT			200//140
+#define LOUD			250//250
 //#define PI				3.14
 //#define WHEELPERIMETER	12.9 //in cm
 //#define CIRCLE			360
@@ -89,6 +89,10 @@ int32_t get_shift(float *carray);
 void set_allowed_to_move(uint8_t allowed);
 
 uint8_t get_allowed_to_move(void);
+
+void set_sample_number(uint8_t snumber);
+
+uint8_t get_sample_number(void);
 
 /*** to put in a different file***/
 

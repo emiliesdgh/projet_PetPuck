@@ -21,6 +21,8 @@ static float micLinput[MICSAMPLESIZE];
 static float micRinput[MICSAMPLESIZE];
 static float micBinput[MICSAMPLESIZE];
 static uint8_t allowed_to_move;
+static uint16_t sample_number;
+
 
 #define MIN_VALUE_THRESHOLD	10000
 
@@ -50,7 +52,7 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 	#endif //TESTING
 
 	static uint16_t total_samples = 0;
-	static uint16_t sample_number = 0;
+//	static uint16_t sample_number = 0;
 	static float32_t micR_rms_value = 0;
 	static uint16_t rms_above_event = 0;
 	static uint8_t direction = 0;
@@ -78,7 +80,7 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 		//stop when buffer is full
 		if(total_samples >= (MICSAMPLESIZE)) {
 			sample_number++;
-			if (sample_number == 10) {
+			if (sample_number > 9) {
 				sample_number = 0;
 			}
 			total_samples = 0; 	//to refill buffer later
@@ -89,7 +91,7 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 
 	arm_rms_f32(micRinput, MICSAMPLESIZE, &current_micR_rms);
 
-	if (current_micR_rms > EVENT && sample_number < 10) {
+	if (current_micR_rms > EVENT && get_sample_number() < 10) {
 		rms_above_event = rms_above_event + 1;
 
 		if (current_micR_rms > micR_rms_value) {
@@ -101,7 +103,6 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 			int32_t shiftRL = 0;
 			shiftRL = get_shift(correlation);
 			//chprintf((BaseSequentialStream *)&SDU1, "shiftRL: %d\n", shiftRL);
-			//chprintf((BaseSequentialStream *)&SDU1, "here\n");
 
 			arm_correlate_f32(micLinput, MICSAMPLESIZE, micBinput, MICSAMPLESIZE, correlation);
 			int32_t shiftLB = 0;
@@ -119,13 +120,13 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 		}
 	}
 
-	if (sample_number == 9 && get_allowed_to_move()) {  //!!! use DEFINE for the 9 (in case MICSAMPLESIZE is changed
-		set_allowed_to_move(0);
-		sample_number = 0;
+	if (sample_number == 9 && allowed_to_move) {  //!!! use DEFINE for the 9 (in case MICSAMPLESIZE is changed
+		allowed_to_move = 0;
+//		sample_number = 0;
 		//if music:
-		if (rms_above_event > 7 && percentage_above_loud > 60) {
+		if (rms_above_event > 5 && percentage_above_loud > 40) {
 //			sample_number = 0;
-			chprintf((BaseSequentialStream *)&SDU1, "cond 1\n");
+//			chprintf((BaseSequentialStream *)&SDU1, "cond 1\n");
 			//if call or whistle
 			//set mode_of_the_robot = MOT
 			set_robot_moves(DANCE);
@@ -134,8 +135,8 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 			//chThdSleepMilliseconds(1000);
 			//chThdResume(&Controlp,R_OK);
 		} else if (rms_above_event > 0) {
-			chprintf((BaseSequentialStream *)&SDU1, "cond 2\n");
-			chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
+//			chprintf((BaseSequentialStream *)&SDU1, "cond 2\n");
+//			chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
 			//set mode_of_the_robot = MOT
 //			chMsgSend(Control)
 			set_direction_to_follow(direction);
@@ -146,14 +147,13 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 //			chSysLockFromISR();
 //			chThdResumeI(&trp, (msg_t)0x1337);  /* Resuming the thread with message.*/
 //			chSysUnlockFromISR();
-
 //			run_to_direction(direction);
 //			direction = 0;					//reset the direction
 //			sample_number = 0;
 		} else {
 //			direction = 0;
 			set_robot_moves(MIC);
-			chprintf((BaseSequentialStream *)&SDU1, "cond 3 %d \n", chVTGetSystemTime());
+//			chprintf((BaseSequentialStream *)&SDU1, "cond 3 %d \n", chVTGetSystemTime());
 //			sample_number = 0;
 //			stay_put();
 			//set mode_of_the_robot = keep going in MIC
@@ -218,3 +218,10 @@ uint8_t get_allowed_to_move(void) {
 	return allowed_to_move;
 }
 
+void set_sample_number(uint8_t snumber) {
+	sample_number = snumber;
+}
+
+uint8_t get_sample_number(void) {
+	return sample_number;
+}
