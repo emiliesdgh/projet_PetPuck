@@ -9,8 +9,8 @@
 #define WHISTLE			250
 #define CLAP			800
 #define LONGEVENT		140
-#define EVENT			140//140
-#define LOUD			150//250
+#define EVENT			240//140
+#define LOUD			350//250
 //#define PI				3.14
 //#define WHEELPERIMETER	12.9 //in cm
 //#define CIRCLE			360

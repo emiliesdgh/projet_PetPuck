@@ -10,7 +10,7 @@
 
 static uint8_t robot_moves;
 static uint8_t direction_to_follow;
-static uint8_t position_reached;
+static uint8_t position_reached = 1;
 
 static THD_WORKING_AREA(waControl, 1024);
 //static thread_t *Controlp;
@@ -27,8 +27,8 @@ static THD_FUNCTION(Control, arg) {
 //		msg_t msg;
 		switch (get_robot_moves()) {
 			case MIC:
-				chprintf((BaseSequentialStream *)&SDU1, "casemic: %d \n", time);
-
+//				chprintf((BaseSequentialStream *)&SDU1, "casemic: %d \n", time);
+				set_position_reached(1);
 				//do nothing bc getting mic values?
 				break;
 			case HEREBOY:
@@ -40,21 +40,23 @@ static THD_FUNCTION(Control, arg) {
 					run_to_direction(get_direction_to_follow());
 				}
 				break;
-//				if(right_motor_get_pos() <= steps)
-//					//set speed non 0
-//				} else {
-//					break;//set speed to 0
-//				}
-//				robot_moves = MIC; //not necessary
 			case DANCE:
+				dancing_puck();
+				right_motor_set_speed(STOP);
+				left_motor_set_speed(STOP);
+				set_position_reached(1);
 				//call dance function here
+				break;
+			default:
+				set_position_reached(1);
 				break;
 
 		}
 		set_allowed_to_move(1);
-		 //100Hz
-		 chThdSleepUntilWindowed(time, time + MS2ST(10));
+		//100Hz
+		chThdSleepUntilWindowed(time, time + MS2ST(10));
 	}
+
 }
 
 
@@ -128,6 +130,7 @@ void run_to_direction(uint8_t direction) {
 	else {
 		stay_put();
 		chprintf((BaseSequentialStream *)&SDU1, "didnt do shit \n");
+		set_position_reached(1);
 
 	}
 }
@@ -181,8 +184,8 @@ void move_straight(void) {
     	left_motor_set_speed(+2*TURNSPEED);
     	cm++;
     }
-	right_motor_set_pos(STOP);
-	left_motor_set_pos(STOP);
+//	right_motor_set_pos(STOP);
+//	left_motor_set_pos(STOP);
 	right_motor_set_speed(STOP);
 	left_motor_set_speed(STOP);
 }
