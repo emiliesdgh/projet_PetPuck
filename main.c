@@ -39,13 +39,15 @@
 #include <communications.h>
 #include <puck_led.h>
 #include <process_image.h>
-
+#include <control.h>
 
 #include <panic_mode.h>
 
 //include the file .h for the main
 #include <main.h>
 #include <puck_movement.h>	//--->>> to merge with danse_mode and proximity_sensors maybe
+
+
 
 
 void SendUint8ToComputer(uint8_t* data, uint16_t size)
@@ -89,7 +91,8 @@ static void serial_start(void)
 
 int main(void)		//clear all leds at the beggining
 {
-
+	static thread_reference_t trp = NULL;
+	static thread_t *Controlp;
     halInit();
     chSysInit();
     mpu_init();
@@ -112,6 +115,7 @@ int main(void)		//clear all leds at the beggining
 	motors_init();				//initialization of the motors
 
 	mic_start(&processAudioData);
+	Control_start();
 
     //inits the I2C communication
     i2c_start();
