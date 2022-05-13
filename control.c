@@ -20,7 +20,7 @@ static THD_FUNCTION(Control, arg) {
 	(void)arg;
 	systime_t time;
 	//Controlp=chThdGetSelfX();
-//	uint8_t printing = 0;
+	uint8_t printing = 0;
 
 	while(1) {
 		time = chVTGetSystemTime();
@@ -42,7 +42,10 @@ static THD_FUNCTION(Control, arg) {
 				//three lines to test thd
 //					printing = get_direction_to_follow();
 //					chprintf((BaseSequentialStream *)&SDU1, "printing inside thread: %d\n", printing);
+					chprintf((BaseSequentialStream *)&SDU1, "allowed to run in HEREBOY b4 run =  %d\n", get_allowed_to_run());
+					chprintf((BaseSequentialStream *)&SDU1, "allowed to move in HEREBOY b4 run =  %d\n", get_allowed_to_move());
 					run_to_direction(get_direction_to_follow());
+					chprintf((BaseSequentialStream *)&SDU1, "allowed to run in HEREBOY =  %d\n", get_allowed_to_run());
 					set_position_reached(1);
 				}
 				break;
@@ -132,17 +135,19 @@ void rotate_to_led(int led) {
 
 void run_to_direction(uint8_t direction) {
 //	chprintf((BaseSequentialStream *)&SDU1, "inside run \n");
+	chprintf((BaseSequentialStream *)&SDU1, "dir in run to dir =  %d\n", direction); //prints false so pb not here
+
 	if (0 < direction && direction < 9) {// && !get_led_flag_uhOh()) {
 		rotate_to_led(direction);
 		move_straight();
-//		chprintf((BaseSequentialStream *)&SDU1, "after straight \n");
+//		chprintf((BaseSequentialStream *)&SDU1, "allowed to run in run =  %d\n", get_allowed_to_run()); //prints false so pb not here
+		chprintf((BaseSequentialStream *)&SDU1, "after straight \n");
 //		set_position_reached(1);
 	}
 	else {
 		stay_put();
 //		chprintf((BaseSequentialStream *)&SDU1, "didnt do shit \n");
 //		set_position_reached(1);
-
 	}
 }
 void stay_put(void) {
@@ -190,13 +195,24 @@ void move_straight(void) {
 	right_motor_set_speed(STOP);
 	left_motor_set_speed(STOP);
 
-	while (cm < XCMSTEP && !get_led_flag_uhOh()) {
-    	right_motor_set_speed(+2*TURNSPEED);
-    	left_motor_set_speed(+2*TURNSPEED);
-    	cm++;
+	while (cm < XCMSTEP && !get_led_flag_uhOh()) { //get_allowed_to_run()) {
+		right_motor_set_speed(+2*TURNSPEED);
+		left_motor_set_speed(+2*TURNSPEED);
+		cm++;
     }
-//	right_motor_set_pos(STOP);
-//	left_motor_set_pos(STOP);
+
+//    chprintf((BaseSequentialStream *)&SDU1, "im out of the while loop\n"); //gets out of while loop so pb not here
+
 	right_motor_set_speed(STOP);
 	left_motor_set_speed(STOP);
+//	chprintf((BaseSequentialStream *)&SDU1, "allowed to run =  %d\n", get_allowed_to_run()); //here allowed to run is 0
+
+//	if (get_allowed_to_run()==0) {
+////		set_position_reached(1);
+////		set_direction_to_follow(0);
+//		return;
+//	}
+
+//	right_motor_set_pos(STOP);
+//	left_motor_set_pos(STOP);
 }

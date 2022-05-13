@@ -192,6 +192,7 @@ static THD_FUNCTION(ObstacleEncounter, arg){
         }
 
 		if(led_flag_uhOh == 1) {
+			set_allowed_to_run(0);
 			set_allowed_to_move(0);
 	    	uint32_t color = get_colors();
 			playNote(NOTE_G4, 120);
@@ -221,6 +222,9 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 			playNote(NOTE_E4, 120);
 //			set_allowed_to_move(0);
 		}
+//		chThdSleepMilliseconds(1500);
+		set_allowed_to_move(1);
+		set_allowed_to_run(1); //probably unnecessary
 
 	}
 		//fréquence de 100Hz
@@ -247,6 +251,7 @@ int16_t motors_speed(uint16_t distance){
 
 		clear_leds();
 		led_flag_uhOh = 0;
+
 	}
 	else {
 		palClearPad(GPIOB, GPIOB_LED_BODY);

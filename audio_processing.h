@@ -90,6 +90,10 @@ void set_allowed_to_move(uint8_t allowed);
 
 uint8_t get_allowed_to_move(void);
 
+void set_allowed_to_run(uint8_t allowed);
+
+uint8_t get_allowed_to_run(void);
+
 void set_sample_number(uint8_t snumber);
 
 uint8_t get_sample_number(void);

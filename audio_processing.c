@@ -22,6 +22,7 @@ static float micLinput[MICSAMPLESIZE];
 static float micRinput[MICSAMPLESIZE];
 static float micBinput[MICSAMPLESIZE];
 static uint8_t allowed_to_move = 1;
+static uint8_t allowed_to_run = 1;
 static uint16_t sample_number;
 
 
@@ -39,7 +40,9 @@ static uint16_t sample_number;
 //static thread_t *Controlp;
 
 void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_samples (how much is it?) bc i never call it w/ something
-	if(!get_position_reached() || !allowed_to_move || get_led_flag_uhOh()==1) {
+
+	if(!get_position_reached() || !allowed_to_move ) { //|| !allowed_to_run) {
+//		set_direction_to_follow(0);
 		return;
 	}
 	/*
@@ -122,7 +125,6 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 	}
 
 	if (sample_number == 9 && allowed_to_move) {  //!!! use DEFINE for the 9 (in case MICSAMPLESIZE is changed
-		allowed_to_move = 0;
 //		sample_number = 0;
 		//if music:
 		if (rms_above_event > 4 && percentage_above_loud > 40) {
@@ -131,17 +133,15 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 			//if call or whistle
 			//set mode_of_the_robot = MOT
 			set_robot_moves(DANCE);
-//			set_direction_to_follow(STOP);
-//			direction = 0;
-			//chThdSleepMilliseconds(1000);
-			//chThdResume(&Controlp,R_OK);
 		} else if (rms_above_event > 0) {
-//			chprintf((BaseSequentialStream *)&SDU1, "cond 2\n");
+			chprintf((BaseSequentialStream *)&SDU1, "cond 2\n");
 //			chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
 			//set mode_of_the_robot = MOT
 //			chMsgSend(Control)
 			set_direction_to_follow(direction);
 			set_position_reached(0);
+			chprintf((BaseSequentialStream *)&SDU1, "allowed to run in audioProc =  %d\n", get_allowed_to_run());
+			chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
 			set_robot_moves(HEREBOY);
 			//chThdSleepMilliseconds(1000);
 			//chThdResume(&Controlp,R_OK);
@@ -159,10 +159,11 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 //			stay_put();
 			//set mode_of_the_robot = keep going in MIC
 		}
-		direction = 0;
+//		direction = 0;
 		rms_above_event = 0;
 		micR_rms_value = 0;
 		count = 0;
+		//allowed_to_move = 0;
 	}
 
 }
@@ -217,6 +218,14 @@ void set_allowed_to_move(uint8_t allowed) {
 
 uint8_t get_allowed_to_move(void) {
 	return allowed_to_move;
+}
+
+void set_allowed_to_run(uint8_t allowed) {
+	allowed_to_run = allowed;
+}
+
+uint8_t get_allowed_to_run(void) {
+	return allowed_to_run;
 }
 
 void set_sample_number(uint8_t snumber) {
