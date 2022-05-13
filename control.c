@@ -42,10 +42,10 @@ static THD_FUNCTION(Control, arg) {
 				//three lines to test thd
 //					printing = get_direction_to_follow();
 //					chprintf((BaseSequentialStream *)&SDU1, "printing inside thread: %d\n", printing);
-					chprintf((BaseSequentialStream *)&SDU1, "allowed to run in HEREBOY b4 run =  %d\n", get_allowed_to_run());
-					chprintf((BaseSequentialStream *)&SDU1, "allowed to move in HEREBOY b4 run =  %d\n", get_allowed_to_move());
+//					chprintf((BaseSequentialStream *)&SDU1, "allowed to run in HEREBOY b4 run =  %d\n", get_allowed_to_run());
+//					chprintf((BaseSequentialStream *)&SDU1, "allowed to move in HEREBOY b4 run =  %d\n", get_allowed_to_move());
 					run_to_direction(get_direction_to_follow());
-					chprintf((BaseSequentialStream *)&SDU1, "allowed to run in HEREBOY =  %d\n", get_allowed_to_run());
+//					chprintf((BaseSequentialStream *)&SDU1, "allowed to run in HEREBOY =  %d\n", get_allowed_to_run());
 					set_position_reached(1);
 				}
 				break;
@@ -135,13 +135,13 @@ void rotate_to_led(int led) {
 
 void run_to_direction(uint8_t direction) {
 //	chprintf((BaseSequentialStream *)&SDU1, "inside run \n");
-	chprintf((BaseSequentialStream *)&SDU1, "dir in run to dir =  %d\n", direction); //prints false so pb not here
+//	chprintf((BaseSequentialStream *)&SDU1, "dir in run to dir =  %d\n", direction); //prints false so pb not here
 
 	if (0 < direction && direction < 9) {// && !get_led_flag_uhOh()) {
 		rotate_to_led(direction);
 		move_straight();
 //		chprintf((BaseSequentialStream *)&SDU1, "allowed to run in run =  %d\n", get_allowed_to_run()); //prints false so pb not here
-		chprintf((BaseSequentialStream *)&SDU1, "after straight \n");
+//		chprintf((BaseSequentialStream *)&SDU1, "after straight \n");
 //		set_position_reached(1);
 	}
 	else {

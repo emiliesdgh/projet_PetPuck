@@ -134,14 +134,14 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 			//set mode_of_the_robot = MOT
 			set_robot_moves(DANCE);
 		} else if (rms_above_event > 0) {
-			chprintf((BaseSequentialStream *)&SDU1, "cond 2\n");
+//			chprintf((BaseSequentialStream *)&SDU1, "cond 2\n");
 //			chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
 			//set mode_of_the_robot = MOT
 //			chMsgSend(Control)
 			set_direction_to_follow(direction);
 			set_position_reached(0);
-			chprintf((BaseSequentialStream *)&SDU1, "allowed to run in audioProc =  %d\n", get_allowed_to_run());
-			chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
+//			chprintf((BaseSequentialStream *)&SDU1, "allowed to run in audioProc =  %d\n", get_allowed_to_run());
+//			chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
 			set_robot_moves(HEREBOY);
 			//chThdSleepMilliseconds(1000);
 			//chThdResume(&Controlp,R_OK);
