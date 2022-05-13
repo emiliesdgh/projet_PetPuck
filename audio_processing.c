@@ -114,7 +114,7 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 		}
 	}
 
-	if (sample_number == 9 && allowed_to_move) {
+	if (sample_number == 9 && get_allowed_to_move()) {
 		set_allowed_to_move(0);
 		sample_number = 0;
 		//if music:
@@ -210,4 +210,7 @@ void set_allowed_to_move(uint8_t allowed) {
 	allowed_to_move = allowed;
 }
 
+uint8_t get_allowed_to_move(void) {
+	return allowed_to_move;
+}
 

@@ -33,7 +33,7 @@ static THD_FUNCTION(Control, arg) {
 				break;
 			case HEREBOY:
 //				position_reached = 0;
-				while(!position_reached) {
+				while(!get_position_reached()) {
 				//three lines to test thd
 					printing = get_direction_to_follow();
 					chprintf((BaseSequentialStream *)&SDU1, "printing inside thread: %d\n", printing);

@@ -88,6 +88,8 @@ int32_t get_shift(float *carray);
 
 void set_allowed_to_move(uint8_t allowed);
 
+uint8_t get_allowed_to_move(void);
+
 /*** to put in a different file***/
 
 //void run_to_direction(uint8_t direction);
