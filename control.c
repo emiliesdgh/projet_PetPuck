@@ -35,6 +35,9 @@ static THD_FUNCTION(Control, arg) {
 				break;
 			case HEREBOY:
 //				position_reached = 0;
+//				if (get_led_flag_uhOh() == 1) {
+//					break;
+//				}
 				while(!get_position_reached()) {
 				//three lines to test thd
 //					printing = get_direction_to_follow();
@@ -129,7 +132,7 @@ void rotate_to_led(int led) {
 
 void run_to_direction(uint8_t direction) {
 //	chprintf((BaseSequentialStream *)&SDU1, "inside run \n");
-	if (0 < direction && direction < 9) {
+	if (0 < direction && direction < 9) {// && !get_led_flag_uhOh()) {
 		rotate_to_led(direction);
 		move_straight();
 //		chprintf((BaseSequentialStream *)&SDU1, "after straight \n");

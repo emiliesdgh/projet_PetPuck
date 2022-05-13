@@ -13,6 +13,7 @@
 #include <puck_led.h>
 #include <motors.h> //?
 #include <control.h>
+#include <puck_movement.h>
 
 //semaphore
 static BSEMAPHORE_DECL(sendToComputer_sem, TRUE);
@@ -20,7 +21,7 @@ static BSEMAPHORE_DECL(sendToComputer_sem, TRUE);
 static float micLinput[MICSAMPLESIZE];
 static float micRinput[MICSAMPLESIZE];
 static float micBinput[MICSAMPLESIZE];
-static uint8_t allowed_to_move;
+static uint8_t allowed_to_move = 1;
 static uint16_t sample_number;
 
 
@@ -38,7 +39,7 @@ static uint16_t sample_number;
 //static thread_t *Controlp;
 
 void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_samples (how much is it?) bc i never call it w/ something
-	if(!get_position_reached()) {
+	if(!get_position_reached() || !allowed_to_move || get_led_flag_uhOh()==1) {
 		return;
 	}
 	/*
@@ -124,7 +125,7 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 		allowed_to_move = 0;
 //		sample_number = 0;
 		//if music:
-		if (rms_above_event > 5 && percentage_above_loud > 40) {
+		if (rms_above_event > 4 && percentage_above_loud > 40) {
 //			sample_number = 0;
 //			chprintf((BaseSequentialStream *)&SDU1, "cond 1\n");
 			//if call or whistle
