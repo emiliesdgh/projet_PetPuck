@@ -15,15 +15,16 @@
 // e-puck 2 main processor headers
 #include "sensors/VL53L0X/VL53L0X.h"
 #include "sensors/proximity.h"
-//#include <sensors/imu.h>
+#include <sensors/imu.h>
 #include "chmtx.h"	//pour le mutex_decl
-//#include <i2c_bus.h>
+
 
 
 
 //include  the files from the given library
 #include <spi_comm.h>
 #include <leds.h>
+#include <i2c_bus.h>
 #include <motors.h>
 
 #include <audio/audio_thread.h>
@@ -42,6 +43,101 @@ static int16_t right_speed = 0;					// in [step/s]
 static int16_t left_speed = 0;					// in [step/s]
 static int16_t speed = 0;
 static int led_flag_uhOh = 0; //led_flag
+
+
+imu_msg_t imu_values;
+
+static int8_t led_flag_panic = 0; //led_flag
+
+#define ACC_OFFSET 0.0239
+#define NB_ACC_SAMPLES 5
+
+static float puck_orientation = 0;
+static float puck_inclination = 0;
+
+static float puck_orientation_f = 0;
+static float puck_inclination_f = 0;
+
+static float puck_orientation2 = 0;
+static float puck_inclination2 = 0;
+
+static float accel_total = 0;
+
+
+int8_t get_inclination(imu_msg_t *imu_values){
+
+
+	//create a pointer to the array for shorter name
+	float *accel = imu_values->acceleration;
+
+	float *accel_filtered = imu_values->acc_filtered;
+
+
+
+	float *gyro = imu_values->gyro_rate;
+
+	int8_t no_panic = 0;
+	int8_t panic = 1;
+
+	float acc_x = get_acceleration(accel[X_AXIS]);
+
+	float acc_x_2 = get_acc_filtered(accel[X_AXIS],5);
+
+
+
+
+	float acc_y = accel[Y_AXIS];
+	float acc_z = accel[Z_AXIS];
+
+	float acc_x_f = accel_filtered[X_AXIS];
+	float acc_y_f = accel_filtered[Y_AXIS];
+	float acc_z_f = accel_filtered[Z_AXIS];
+
+	float gyro_z = gyro[Z_AXIS];
+
+	float acc_x_y_f = sqrtf( (float)((acc_x_f * acc_x_f) + (acc_y_f * acc_y_f) ));
+
+	puck_inclination_f = 90.0 - atan2f((float)(acc_z_f),(float)( acc_x_y_f)) * CST_RADIAN;
+	puck_orientation_f = 180 - puck_inclination_f;
+//
+//
+	accel_total = sqrtf((float)((acc_x * acc_x) + (acc_y * acc_y) + (acc_z * acc_z)));
+
+	chprintf((BaseSequentialStream *)&SDU1, "accel_total   : %f\n", accel_total);
+	chprintf((BaseSequentialStream *)&SDU1, "acc_x   : %f\n", acc_x);
+	chprintf((BaseSequentialStream *)&SDU1, "acc_y   : %f\n", acc_y);
+	chprintf((BaseSequentialStream *)&SDU1, "acc_z   : %f\n", acc_z);
+
+
+//	chprintf((BaseSequentialStream *)&SDU1, "puck_orientation_f   : %d\n", puck_orientation_f);
+
+	float acc_x_y = sqrtf( (float)((acc_x * acc_x) + (acc_y * acc_y) ));
+
+	puck_inclination = 90.0 - atan2f((float)(acc_z),(float)( acc_x_y)) * CST_RADIAN;
+	puck_orientation = 180 - puck_inclination;
+
+//	puck_inclination1 = (atan2f((float)(acc_x), (float)(acc_y)) * CST_RADIAN) + 180.0;
+//	puck_orientation1 = 180 - puck_inclination1;
+//
+//	puck_inclination2 = 90.0 - atan2f((float)(acc_z),(float)(acc_y)) * CST_RADIAN;
+//	puck_orientation2 = 180 - puck_inclination2;
+//
+//	chprintf((BaseSequentialStream *)&SDU1, "acc x y  : %f\n", acc_x_y);
+////
+//	chprintf((BaseSequentialStream *)&SDU1, "puck_inclination  : %f\n", puck_inclination);
+////
+//	chprintf((BaseSequentialStream *)&SDU1, "puck_inclination 1 : %f\n", puck_inclination1);
+
+	if(puck_orientation > 10){
+
+		return panic;
+
+	}else{
+		return no_panic;
+	}
+}
+
+
 
 //static uint16_t distance_prox = 0;
 static int ambient_testing = 0;
@@ -82,32 +178,7 @@ int get_ambient_testing(void){
 	return  ambient_testing;
 }
 
-//
-////*********DANCING THREAD***********
-////initialization of the proximity thread
-//static THD_WORKING_AREA(waDancingPuck, 2048);
-//static THD_FUNCTION(DancingPuck, arg){
-//
-//	chRegSetThreadName(__FUNCTION__);
-//	(void)arg;
-//    systime_t time;
-//
-//	while(1){
-//		time = chVTGetSystemTime();
-//
-//		dancing_puck();
-//
-//		//fréquence de 100Hz
-//		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
-//	}
-//}
-//
-////function to start the obstacle encounter thread
-//void DancingPuck_start(void){
-//
-//    chThdCreateStatic(waDancingPuck, sizeof(waDancingPuck), NORMALPRIO, DancingPuck, NULL);
-//
-//}
+
 // fonction qui fait bouger le moteur avec la vitesse demandée
 void motor_set_danse_speed(float speed_r, float speed_l)
 {
@@ -148,64 +219,56 @@ void dancing_puck(void){
 }
 //********************************************
 //
-////*********PROXIMITY TO STOP THREAD***********
-////initialization of the proximity thread
-//static THD_WORKING_AREA(waProximityToStop, 2048);
-//static THD_FUNCTION(ProximityToStop, arg){
-//
-//	chRegSetThreadName(__FUNCTION__);
-//	(void)arg;
-//    systime_t time;
-//
-//	while(1){
-//		time = chVTGetSystemTime();
-//
-//		distance_prox = VL53L0X_get_dist_mm();
-//		ambient_testing = get_ambient_light(1);
-//
-//
-//		//fréquence de 100Hz
-//		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
-//	}
-//}
-//
-////function to start the obstacle encounter thread
-//void proximityToStop_start(void){
-//
-//    chThdCreateStatic(waProximityToStop, sizeof(waProximityToStop), NORMALPRIO, ProximityToStop, NULL);
-//
-//}
-//
-////function to get the distance between the robot and a possible obstacle
-////sent to function that checks this distance in file obtacle_encounter.c
-//uint16_t get_distance_toStop(void){
-//	return distance_prox;
-//}
-//********************************************
 
 //*********OBSTACLE ENCOUNTER THREAD***********
 //initialization of the obstacle encounter thread
-static THD_WORKING_AREA(waObstacleEncounter, 256);
+static THD_WORKING_AREA(waObstacleEncounter, 1024);
 static THD_FUNCTION(ObstacleEncounter, arg){
 
 	chRegSetThreadName(__FUNCTION__);
 	(void)arg;
     systime_t time;
 
+	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus, "/imu");
+
     uint16_t distance_mm = 0;
 
 	while(1){
+
 		time = chVTGetSystemTime();
+        //wait for new measures to be published
+        messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
+
+        led_flag_panic = get_inclination(&imu_values);
+
 
 		//need function to modify the value of distance_mm which will be created in file proximity_sensor
 		distance_mm  = VL53L0X_get_dist_mm();
 
 		speed = motors_speed(distance_mm);
 
-//		move_straight(speed);
-
 		left_motor_set_speed(speed);
 		right_motor_set_speed(speed);
+
+//		chprintf((BaseSequentialStream *)&SDU1, "orientation : %f\n", puck_orientation);
+
+//		move_straight(speed);
+
+//
+        if(led_flag_panic == 1){
+////        dac_play(NOTE_CS7); //-->>> bonne note mais pas pour  les tests lol
+//        	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol et  plutot le mettre ici qu'au dessus
+//        	PanicMode_LED();
+        	// et stop les moteurs
+        	speed = 0;
+        	palSetPad(GPIOD, GPIOD_LED_FRONT);
+        	palClearPad(GPIOB, GPIOB_LED_BODY);
+
+        }else{
+
+        	dac_stop();
+        	palClearPad(GPIOD, GPIOD_LED_FRONT);
+        }
 
 		if(led_flag_uhOh == 1){
 	    	uint32_t color = get_colors();
@@ -234,9 +297,11 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 //			playNote(NOTE_E4, 120);
 		}
 
+
+	}
 		//fréquence de 100Hz
 		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
-	}
+//	}
 }
 
 //function to start the obstacle encounter thread
@@ -252,18 +317,17 @@ int16_t motors_speed(uint16_t distance){
 
 	if(distance > DISTANCE_MIN){
 
-//		speed = SPEED_MAX;
+		speed = SPEED_MAX;
 		palSetPad(GPIOB, GPIOB_LED_BODY);//-->>test sans les moteurs
-		speed = 0;
+//		speed = 0;
 
 		clear_leds();
 		led_flag_uhOh = 0;
 	}
-	else{
+	else {
 		palClearPad(GPIOB, GPIOB_LED_BODY);
 		led_flag_uhOh += 1;
 		speed = 0;
-
 	}
 
 	return (int16_t)speed;
