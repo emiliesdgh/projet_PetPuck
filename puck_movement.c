@@ -18,9 +18,6 @@
 #include <sensors/imu.h>
 #include "chmtx.h"	//pour le mutex_decl
 
-
-
-
 //include  the files from the given library
 #include <spi_comm.h>
 #include <leds.h>
@@ -30,12 +27,10 @@
 #include <audio/audio_thread.h>
 #include <audio/play_melody.h>
 
-//#include <selector.h>
 //include our files
 #include <main.h>
 #include <puck_led.h>
 #include <control.h>
-//#include <audio_processing.h>
 #include <puck_movement.h>
 #include <audio_processing.h>
 
@@ -126,8 +121,6 @@ void motor_set_danse_speed(float speed_r, float speed_l)
 
 void dancing_puck(void){
 
-//	int16_t dance_counter = 0;
-
 	reset_direction = 1;
 
 	for(int16_t dance_counter=1; dance_counter<5; dance_counter++){
@@ -146,8 +139,10 @@ void dancing_puck(void){
 		}
 
 		chThdSleepMilliseconds(300);
+//		motor_set_danse_speed(0,0);
+
 	}
-	motor_set_danse_speed(0,0);
+//	motor_set_danse_speed(0,0);
 
 }
 //********************************************
@@ -172,28 +167,10 @@ static THD_FUNCTION(ObstacleEncounter, arg){
         //wait for new measures to be published
         messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
 
-        led_flag_panic = get_inclination(&imu_values);
-
-
 		//need function to modify the value of distance_mm which will be created in file proximity_sensor
 		distance_mm  = VL53L0X_get_dist_mm();
 
 		speed = motors_speed(distance_mm);
-
-        if(led_flag_panic == 1) {
-//        	dac_play(NOTE_CS7); //-->>> bonne note mais pas pour  les tests lol
-//        	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol et  plutot le mettre ici qu'au dessus
-//        	PanicMode_LED();
-        	// et stop les moteurs
-//        	speed = 0;
-        	palSetPad(GPIOD, GPIOD_LED_FRONT);
-        	palClearPad(GPIOB, GPIOB_LED_BODY);
-
-        }else{
-
-//        	dac_stop();
-        	palClearPad(GPIOD, GPIOD_LED_FRONT);
-        }
 
 		if(led_flag_uhOh == 1) {
 			set_puck_playing_sound(1);
@@ -225,10 +202,10 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 			set_puck_playing_sound(0);
 		}
 
-	}
+//	}
 		//fréquence de 100Hz
 		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
-//	}
+	}
 }
 
 //function to start the obstacle encounter thread
@@ -245,7 +222,7 @@ int16_t motors_speed(uint16_t distance){
 	if(distance > DISTANCE_MIN){
 
 //		speed = SPEED_MAX;
-		palSetPad(GPIOB, GPIOB_LED_BODY);//-->>test sans les moteurs
+//		palSetPad(GPIOB, GPIOB_LED_BODY);//-->>test sans les moteurs
 //		speed = 0;
 
 		clear_leds();
@@ -253,7 +230,7 @@ int16_t motors_speed(uint16_t distance){
 	}
 	else {
 		set_direction_to_follow(0);
-		palClearPad(GPIOB, GPIOB_LED_BODY);
+//		palClearPad(GPIOB, GPIOB_LED_BODY);
 		led_flag_uhOh += 1;
 		speed = 0;
 	}
@@ -308,7 +285,50 @@ uint32_t get_colors(void){
 	}
 }
 //********************************************
+static THD_WORKING_AREA(waPanicMode, 1024);
+static THD_FUNCTION(PanicMode, arg){
 
+	chRegSetThreadName(__FUNCTION__);
+	(void)arg;
+
+	systime_t time;
+	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus, "/imu");
+
+	while(1){
+
+		time = chVTGetSystemTime();
+        //wait for new measures to be published
+        messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
+
+        led_flag_panic = get_inclination(&imu_values);
+
+        if(led_flag_panic == 1){
+////        dac_play(NOTE_CS7);//-->>> bonne note mais pas pour  les tests lol
+        	set_puck_playing_sound(1);
+        	reset_direction = 1;
+        	motor_set_danse_speed(0,0);
+        	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol et  plutot le mettre ici qu'au dessus
+        	PanicMode_LED();
+//        	palSetPad(GPIOD, GPIOD_LED_FRONT);
+
+        	dac_stop();
+            set_puck_playing_sound(0);
+
+
+        }//else{
+//        	dac_stop();
+//        	palClearPad(GPIOD, GPIOD_LED_FRONT);
+//        }
+
+        //100Hz
+        chThdSleepUntilWindowed(time, time + MS2ST(10));
+	}
+}
+
+void PanicMode_start(void)
+{
+	chThdCreateStatic(waPanicMode, sizeof(waPanicMode), NORMALPRIO+2 , PanicMode, NULL) ;
+}
 
 
 int8_t get_inclination(imu_msg_t *imu_values){
@@ -317,68 +337,21 @@ int8_t get_inclination(imu_msg_t *imu_values){
 	//create a pointer to the array for shorter name
 	float *accel = imu_values->acceleration;
 
-//	float *accel_filtered = imu_values->acc_filtered;
-//
-//
-//
-//	float *gyro = imu_values->gyro_rate;
-
 	int8_t no_panic = 0;
 	int8_t panic = 1;
 
 	float acc_x = accel[X_AXIS];
-//
-//	float acc_x_2 = get_acc_filtered(accel[X_AXIS],5);
-//
-//
-//
-//
 	float acc_y = accel[Y_AXIS];
 	float acc_z = accel[Z_AXIS];
-//
-//	float acc_x_f = accel_filtered[X_AXIS];
-//	float acc_y_f = accel_filtered[Y_AXIS];
-//	float acc_z_f = accel_filtered[Z_AXIS];
-//
-//	float gyro_z = gyro[Z_AXIS];
-//
-//	float acc_x_y_f = sqrtf( (float)((acc_x_f * acc_x_f) + (acc_y_f * acc_y_f) ));
-//
-//	puck_inclination_f = 90.0 - atan2f((float)(acc_z_f),(float)( acc_x_y_f)) * CST_RADIAN;
-//	puck_orientation_f = 180 - puck_inclination_f;
-////
-////
-//	accel_total = sqrtf((float)((acc_x * acc_x) + (acc_y * acc_y) + (acc_z * acc_z)));
-//
-//	chprintf((BaseSequentialStream *)&SDU1, "accel_total   : %f\n", accel_total);
-//	chprintf((BaseSequentialStream *)&SDU1, "acc_x   : %f\n", acc_x);
-//	chprintf((BaseSequentialStream *)&SDU1, "acc_y   : %f\n", acc_y);
-//	chprintf((BaseSequentialStream *)&SDU1, "acc_z   : %f\n", acc_z);
-//
-//
-////	chprintf((BaseSequentialStream *)&SDU1, "puck_orientation_f   : %d\n", puck_orientation_f);
-//
+
 	float acc_x_y = sqrtf( (float)((acc_x * acc_x) + (acc_y * acc_y) ));
 
 	puck_inclination = 90.0 - atan2f((float)(acc_z),(float)( acc_x_y)) * CST_RADIAN;
 	puck_orientation = 180 - puck_inclination;
 
-//	puck_inclination1 = (atan2f((float)(acc_x), (float)(acc_y)) * CST_RADIAN) + 180.0;
-//	puck_orientation1 = 180 - puck_inclination1;
-//
-//	puck_inclination2 = 90.0 - atan2f((float)(acc_z),(float)(acc_y)) * CST_RADIAN;
-//	puck_orientation2 = 180 - puck_inclination2;
-//
-//	chprintf((BaseSequentialStream *)&SDU1, "acc x y  : %f\n", acc_x_y);
-////
-//	chprintf((BaseSequentialStream *)&SDU1, "puck_inclination  : %f\n", puck_inclination);
-////
-//	chprintf((BaseSequentialStream *)&SDU1, "puck_inclination 1 : %f\n", puck_inclination1);
+
 
 	if(fabs(accel[X_AXIS]) > threshold_accel || fabs(accel[Y_AXIS]) > 7.0){
-
-//	if(puck_orientation > 10 && fabs(acc_z) > 12){
-
 		return panic;
 
 	}else{

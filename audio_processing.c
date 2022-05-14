@@ -42,29 +42,16 @@ static uint8_t puck_playing_sound = 0;
 void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_samples (how much is it?) bc i never call it w/ something
 	if(!get_position_reached() || !allowed_to_move || get_led_flag_uhOh()==1 || puck_playing_sound) {
 			return;
-		}
-	/*
-	*	We get 160 samples per mic every 10ms
-	*	So we fill the samples buffers to reach
-	*	1024 samples, then we compute the FFTs. //can change to MICSAMPLESIZE bc idc
-	*/
-
-	#ifdef TESTING
-		static uint16_t mustSend = 0;
-	#endif //TESTING
+	}
 
 	static uint16_t total_samples = 0;
-//	static uint16_t sample_number = 0;
 	static float32_t micR_rms_value = 0;
 	static uint16_t rms_above_event = 0;
 	static uint8_t direction = 0;
 	static int16_t count = 0;
 	float32_t current_micR_rms = 0;
 	static float32_t correlation[CORRELATIONSIZE] = {0};
-	//careful, after computing direction, reinitialise to 0!!! (done in function)
 	int32_t percentage_above_loud = 0;
-
-
 
 	//loop to fill the buffers
 	for(uint16_t i = 0 ; i < num_samples ; i+=4) {
@@ -103,71 +90,44 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 
 			//calculate direction of sound -- will only follow it if later finds out it was only a call and not music playing
 			arm_correlate_f32(micRinput, MICSAMPLESIZE, micLinput, MICSAMPLESIZE, correlation);
-
 			int32_t shiftRL = 0;
 			shiftRL = get_shift(correlation);
-			//chprintf((BaseSequentialStream *)&SDU1, "shiftRL: %d\n", shiftRL);
 
 			arm_correlate_f32(micLinput, MICSAMPLESIZE, micBinput, MICSAMPLESIZE, correlation);
 			int32_t shiftLB = 0;
 			shiftLB = get_shift(correlation);
-			//chprintf((BaseSequentialStream *)&SDU1, "shiftLB: %d\n", shiftLB);
 
 			arm_correlate_f32(micRinput, MICSAMPLESIZE, micBinput, MICSAMPLESIZE, correlation);
 			int32_t shiftRB = 0;
 			shiftRB = get_shift(correlation);
-			//chprintf((BaseSequentialStream *)&SDU1, "shiftRB: %d\n", shiftRB);
 
 			direction = get_direction(shiftRL, shiftLB, shiftRB);
-//			chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
-//			chThdSleepMilliseconds(2000);
 		}
 	}
 
 	if (sample_number == 9 && allowed_to_move) {  //!!! use DEFINE for the 9 (in case MICSAMPLESIZE is changed
 		allowed_to_move = 0;
-//		sample_number = 0;
 		//if music:
 		if (rms_above_event > 4 && percentage_above_loud > 40) {
-//			sample_number = 0;
-//			chprintf((BaseSequentialStream *)&SDU1, "cond 1\n");
-			//if call or whistle
-			//set mode_of_the_robot = MOT
+
 			set_robot_moves(DANCE);
-//			set_direction_to_follow(STOP);
-//			direction = 0;
-			//chThdSleepMilliseconds(1000);
-			//chThdResume(&Controlp,R_OK);
+
 		} else if (rms_above_event > 0) {
-//			chprintf((BaseSequentialStream *)&SDU1, "cond 2\n");
-//			chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
-			//set mode_of_the_robot = MOT
-//			chMsgSend(Control)
+
 			set_direction_to_follow(direction);
 			set_position_reached(0);
 			set_robot_moves(HEREBOY);
-			//chThdSleepMilliseconds(1000);
-			//chThdResume(&Controlp,R_OK);
-//			chSysLockFromISR();
-//			chThdResumeI(&trp, (msg_t)0x1337);  /* Resuming the thread with message.*/
-//			chSysUnlockFromISR();
-//			run_to_direction(direction);
-//			direction = 0;					//reset the direction
-//			sample_number = 0;
+
 		} else {
-//			direction = 0;
+
 			set_robot_moves(MIC);
-//			chprintf((BaseSequentialStream *)&SDU1, "cond 3 %d \n", chVTGetSystemTime());
-//			sample_number = 0;
-//			stay_put();
-			//set mode_of_the_robot = keep going in MIC
+
 		}
 		direction = 0;
 		rms_above_event = 0;
 		micR_rms_value = 0;
 		count = 0;
 	}
-
 }
 
 
@@ -175,24 +135,24 @@ uint8_t get_direction(int32_t shift1, int32_t shift2, int32_t shift3) {
 	uint8_t direction = 0;
 	//shift1: RL //shift2: LB //shift3: RB
 
-	if (shift1 > MAXDELTA1) { //R lags L
+	if (shift1 > MAXDELTA1) { 				//R lags L
 		direction = 7;
-	} else if (shift1 < -MAXDELTA1) { //L lags R
+	} else if (shift1 < -MAXDELTA1) { 		//L lags R
 		direction = 3;
-	} else if (shift1 > 0) { //gets to L first
-		if (shift2 > 0) { 	 //L lags B
+	} else if (shift1 > 0) { 				//gets to L first
+		if (shift2 > 0) { 					//L lags B
 			direction = 6;
 		} else {
 			direction = 8;
 		}
-	} else if (shift1 < 0) { //gets to R first
-		if (shift3 > 0) {	 //R lags B
+	} else if (shift1 < 0) { 				//gets to R first
+		if (shift3 > 0) {	 				//R lags B
 			direction = 4;
 		} else {
 			direction = 2;
 		}
 	} else {//if (shift1 == 0) {
-		if (shift2 < 0 || shift3 < 0) { //B lags R or L
+		if (shift2 < 0 || shift3 < 0) { 	//B lags R or L
 			direction = 1;
 		} else {
 			direction = 5;

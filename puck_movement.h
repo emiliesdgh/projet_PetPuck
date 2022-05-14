@@ -31,6 +31,7 @@ void ObstacleEncounter_start(void);
 
 
 int8_t get_reset_direction(void);
+void PanicMode_start(void);
 
 void clear_reset_direction(void);
 

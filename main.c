@@ -125,7 +125,9 @@ int main(void)		//clear all leds at the beggining
 	process_image_start();
 	//start the mic audio processing  ?
 	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
-
+	calibrate_gyro();
+	calibrate_acc();
+	PanicMode_start();
 //ush
 //	#ifdef TESTING
 //    static float send_tab[MICSAMPLESIZE];
@@ -148,8 +150,7 @@ int main(void)		//clear all leds at the beggining
 
 
 	//starts the calibration of the sensors
-//    calibrate_gyro();
-//    calibrate_acc();
+
 
     //%%%%%%%%%%%%%%%%%%%%%%%%%
 //
