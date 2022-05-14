@@ -46,7 +46,7 @@ static int16_t left_speed = 0;					// in [step/s]
 static int16_t speed = 0;
 
 static int led_flag_uhOh = 0; //led_flag
-
+static int8_t reset_direction = 0;
 
 imu_msg_t imu_values;
 
@@ -128,6 +128,8 @@ void dancing_puck(void){
 
 //	int16_t dance_counter = 0;
 
+	reset_direction = 1;
+
 	for(int16_t dance_counter=1; dance_counter<5; dance_counter++){
 
 		if(dance_counter==1 || dance_counter==3){
@@ -142,8 +144,12 @@ void dancing_puck(void){
 			palTogglePad(GPIOB, GPIOB_LED_BODY);
 //			chThdSleepMilliseconds(200);
 		}
+
 		chThdSleepMilliseconds(300);
 	}
+	motor_set_danse_speed(0,0);
+	chThdSleepMilliseconds(300);
+
 
 }
 //********************************************
@@ -192,11 +198,10 @@ static THD_FUNCTION(ObstacleEncounter, arg){
         }
 
 		if(led_flag_uhOh == 1) {
-			set_allowed_to_run(0);
-			set_allowed_to_move(0);
+			set_puck_playing_sound(1);
+			reset_direction = 1;
 	    	uint32_t color = get_colors();
 			playNote(NOTE_G4, 120);
-//	    	dac_play(NOTE_G4);
 			if(color==RED){
 
 				clear_leds();
@@ -218,13 +223,9 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 				    set_rgb_led(i,0,0,LED_RGB_INTENSITY);
 				}
 			}
-//	    	dac_stop();
 			playNote(NOTE_E4, 120);
-//			set_allowed_to_move(0);
+			set_puck_playing_sound(0);
 		}
-//		chThdSleepMilliseconds(1500);
-		set_allowed_to_move(1);
-		set_allowed_to_run(1); //probably unnecessary
 
 	}
 		//fréquence de 100Hz
@@ -251,9 +252,9 @@ int16_t motors_speed(uint16_t distance){
 
 		clear_leds();
 		led_flag_uhOh = 0;
-
 	}
 	else {
+		set_direction_to_follow(0);
 		palClearPad(GPIOB, GPIOB_LED_BODY);
 		led_flag_uhOh += 1;
 		speed = 0;
@@ -264,6 +265,14 @@ int16_t motors_speed(uint16_t distance){
 
 int get_led_flag_uhOh(void) {
 	return led_flag_uhOh;
+}
+
+int8_t get_reset_direction(void){
+	return reset_direction;
+}
+
+void clear_reset_direction(void){
+	 reset_direction = 0;
 }
 
 uint32_t get_colors(void){
@@ -378,6 +387,4 @@ int8_t get_inclination(imu_msg_t *imu_values){
 		return no_panic;
 	}
 }
-
-
 

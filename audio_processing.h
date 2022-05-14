@@ -86,6 +86,12 @@ void turn_led(float angle);
 
 int32_t get_shift(float *carray);
 
+
+
+void set_playing_sound(uint8_t allowed);
+
+uint8_t get_playing_sound(void);
+
 void set_allowed_to_move(uint8_t allowed);
 
 uint8_t get_allowed_to_move(void);
@@ -97,6 +103,10 @@ uint8_t get_allowed_to_run(void);
 void set_sample_number(uint8_t snumber);
 
 uint8_t get_sample_number(void);
+
+void set_puck_playing_sound(uint8_t playing);
+
+uint8_t get_puck_playing_sound(void);
 
 /*** to put in a different file***/
 

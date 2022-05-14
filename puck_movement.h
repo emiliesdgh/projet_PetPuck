@@ -29,6 +29,11 @@ int16_t motors_speed(uint16_t distance_mm);
 uint32_t get_colors(void);
 void ObstacleEncounter_start(void);
 
+
+int8_t get_reset_direction(void);
+
+void clear_reset_direction(void);
+
 int get_led_flag_uhOh(void);
 
 //void process_color_start(void);

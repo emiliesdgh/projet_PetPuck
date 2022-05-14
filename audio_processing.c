@@ -22,8 +22,8 @@ static float micLinput[MICSAMPLESIZE];
 static float micRinput[MICSAMPLESIZE];
 static float micBinput[MICSAMPLESIZE];
 static uint8_t allowed_to_move = 1;
-static uint8_t allowed_to_run = 1;
 static uint16_t sample_number;
+static uint8_t puck_playing_sound = 0;
 
 
 #define MIN_VALUE_THRESHOLD	10000
@@ -31,7 +31,7 @@ static uint16_t sample_number;
 /*
 *	Callback called when the demodulation of the four microphones is done.
 *	We get 160 samples per mic every 10ms (16kHz)
-*	
+*
 *	params :
 *	int16_t *data			Buffer containing 4 times 160 samples. the samples are sorted by micro
 *							so we have [micRight1, micLeft1, micBack1, micFront1, micRight2, etc...]
@@ -40,11 +40,9 @@ static uint16_t sample_number;
 //static thread_t *Controlp;
 
 void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_samples (how much is it?) bc i never call it w/ something
-
-	if(!get_position_reached() || !allowed_to_move ) { //|| !allowed_to_run) {
-//		set_direction_to_follow(0);
-		return;
-	}
+	if(!get_position_reached() || !allowed_to_move || get_led_flag_uhOh()==1 || puck_playing_sound) {
+			return;
+		}
 	/*
 	*	We get 160 samples per mic every 10ms
 	*	So we fill the samples buffers to reach
@@ -65,6 +63,8 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 	static float32_t correlation[CORRELATIONSIZE] = {0};
 	//careful, after computing direction, reinitialise to 0!!! (done in function)
 	int32_t percentage_above_loud = 0;
+
+
 
 	//loop to fill the buffers
 	for(uint16_t i = 0 ; i < num_samples ; i+=4) {
@@ -125,6 +125,7 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 	}
 
 	if (sample_number == 9 && allowed_to_move) {  //!!! use DEFINE for the 9 (in case MICSAMPLESIZE is changed
+		allowed_to_move = 0;
 //		sample_number = 0;
 		//if music:
 		if (rms_above_event > 4 && percentage_above_loud > 40) {
@@ -133,6 +134,10 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 			//if call or whistle
 			//set mode_of_the_robot = MOT
 			set_robot_moves(DANCE);
+//			set_direction_to_follow(STOP);
+//			direction = 0;
+			//chThdSleepMilliseconds(1000);
+			//chThdResume(&Controlp,R_OK);
 		} else if (rms_above_event > 0) {
 //			chprintf((BaseSequentialStream *)&SDU1, "cond 2\n");
 //			chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
@@ -140,8 +145,6 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 //			chMsgSend(Control)
 			set_direction_to_follow(direction);
 			set_position_reached(0);
-//			chprintf((BaseSequentialStream *)&SDU1, "allowed to run in audioProc =  %d\n", get_allowed_to_run());
-//			chprintf((BaseSequentialStream *)&SDU1, "direction is: %d\n", direction);
 			set_robot_moves(HEREBOY);
 			//chThdSleepMilliseconds(1000);
 			//chThdResume(&Controlp,R_OK);
@@ -159,11 +162,10 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 //			stay_put();
 			//set mode_of_the_robot = keep going in MIC
 		}
-//		direction = 0;
+		direction = 0;
 		rms_above_event = 0;
 		micR_rms_value = 0;
 		count = 0;
-		//allowed_to_move = 0;
 	}
 
 }
@@ -220,18 +222,18 @@ uint8_t get_allowed_to_move(void) {
 	return allowed_to_move;
 }
 
-void set_allowed_to_run(uint8_t allowed) {
-	allowed_to_run = allowed;
-}
-
-uint8_t get_allowed_to_run(void) {
-	return allowed_to_run;
-}
-
 void set_sample_number(uint8_t snumber) {
 	sample_number = snumber;
 }
 
 uint8_t get_sample_number(void) {
 	return sample_number;
+}
+
+void set_puck_playing_sound(uint8_t playing) {
+	puck_playing_sound = playing;
+}
+
+uint8_t get_puck_playing_sound(void) {
+	return puck_playing_sound;
 }

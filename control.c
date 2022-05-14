@@ -20,7 +20,7 @@ static THD_FUNCTION(Control, arg) {
 	(void)arg;
 	systime_t time;
 	//Controlp=chThdGetSelfX();
-	uint8_t printing = 0;
+//	uint8_t printing = 0;
 
 	while(1) {
 		time = chVTGetSystemTime();
@@ -38,21 +38,32 @@ static THD_FUNCTION(Control, arg) {
 //				if (get_led_flag_uhOh() == 1) {
 //					break;
 //				}
-				while(!get_position_reached()) {
+//				while(!get_position_reached()) {
 				//three lines to test thd
 //					printing = get_direction_to_follow();
 //					chprintf((BaseSequentialStream *)&SDU1, "printing inside thread: %d\n", printing);
-//					chprintf((BaseSequentialStream *)&SDU1, "allowed to run in HEREBOY b4 run =  %d\n", get_allowed_to_run());
-//					chprintf((BaseSequentialStream *)&SDU1, "allowed to move in HEREBOY b4 run =  %d\n", get_allowed_to_move());
 					run_to_direction(get_direction_to_follow());
-//					chprintf((BaseSequentialStream *)&SDU1, "allowed to run in HEREBOY =  %d\n", get_allowed_to_run());
 					set_position_reached(1);
-				}
+//					set_direction_to_follow(0);
+//					if(get_puck_playing_sound()){
+//						break;
+//					}
+//				}
 				break;
 			case DANCE:
 				dancing_puck();
-				right_motor_set_speed(STOP);
-				left_motor_set_speed(STOP);
+
+				if(get_reset_direction() == 1){
+	//							direction = 0;
+					set_direction_to_follow(0);
+		//			chprintf((BaseSequentialStream *)&SDU1, "direction in if  get_reset_direction  : %d\n", direction);
+
+		//			chprintf((BaseSequentialStream *)&SDU1, "direction_to_follow  in if  get_reset_direction  : %d\n", get_direction_to_follow());
+
+					clear_reset_direction();
+				}
+//				right_motor_set_speed(STOP);
+//				left_motor_set_speed(STOP);
 				set_position_reached(1);
 				//call dance function here
 				break;
@@ -75,7 +86,7 @@ static THD_FUNCTION(Control, arg) {
 
 
 void Control_start(void) {
-	chThdCreateStatic(waControl, sizeof(waControl), NORMALPRIO, Control, NULL) ;
+	chThdCreateStatic(waControl, sizeof(waControl), NORMALPRIO+1, Control, NULL) ;
 }
 
 void set_robot_moves(uint8_t new_mode) {
@@ -135,16 +146,23 @@ void rotate_to_led(int led) {
 
 void run_to_direction(uint8_t direction) {
 //	chprintf((BaseSequentialStream *)&SDU1, "inside run \n");
-//	chprintf((BaseSequentialStream *)&SDU1, "dir in run to dir =  %d\n", direction); //prints false so pb not here
+	if (0 < direction && direction < 9){// && get_puck_playing_sound() ==0) {// && !get_led_flag_uhOh()) {
 
-	if (0 < direction && direction < 9) {// && !get_led_flag_uhOh()) {
+		if(get_reset_direction() == 1){
+			direction = 0;
+			set_direction_to_follow(0);
+//			chprintf((BaseSequentialStream *)&SDU1, "direction in if  get_reset_direction  : %d\n", direction);
+
+//			chprintf((BaseSequentialStream *)&SDU1, "direction_to_follow  in if  get_reset_direction  : %d\n", get_direction_to_follow());
+
+			clear_reset_direction();
+		}
+
 		rotate_to_led(direction);
 		move_straight();
-//		chprintf((BaseSequentialStream *)&SDU1, "allowed to run in run =  %d\n", get_allowed_to_run()); //prints false so pb not here
 //		chprintf((BaseSequentialStream *)&SDU1, "after straight \n");
 //		set_position_reached(1);
-	}
-	else {
+	} else {
 		stay_put();
 //		chprintf((BaseSequentialStream *)&SDU1, "didnt do shit \n");
 //		set_position_reached(1);
@@ -195,24 +213,15 @@ void move_straight(void) {
 	right_motor_set_speed(STOP);
 	left_motor_set_speed(STOP);
 
-	while (cm < XCMSTEP && !get_led_flag_uhOh()) { //get_allowed_to_run()) {
-		right_motor_set_speed(+2*TURNSPEED);
-		left_motor_set_speed(+2*TURNSPEED);
-		cm++;
+//	chprintf((BaseSequentialStream *)&SDU1, "direction in move straight  : %d\n", get_direction_to_follow());
+
+	while (cm < XCMSTEP && !get_led_flag_uhOh()){// && get_direction_to_follow()!=0) {
+    	right_motor_set_speed(+2*TURNSPEED);
+    	left_motor_set_speed(+2*TURNSPEED);
+    	cm++;
     }
-
-//    chprintf((BaseSequentialStream *)&SDU1, "im out of the while loop\n"); //gets out of while loop so pb not here
-
-	right_motor_set_speed(STOP);
-	left_motor_set_speed(STOP);
-//	chprintf((BaseSequentialStream *)&SDU1, "allowed to run =  %d\n", get_allowed_to_run()); //here allowed to run is 0
-
-//	if (get_allowed_to_run()==0) {
-////		set_position_reached(1);
-////		set_direction_to_follow(0);
-//		return;
-//	}
-
 //	right_motor_set_pos(STOP);
 //	left_motor_set_pos(STOP);
+	right_motor_set_speed(STOP);
+	left_motor_set_speed(STOP);
 }
