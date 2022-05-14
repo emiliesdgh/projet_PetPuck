@@ -12,31 +12,18 @@
 #define CST_RADIAN		(180.0/3.1415)	// used to convert radian in degrees
 
 
-int8_t get_inclination(imu_msg_t *imu_values);
-
 void initial_proximity(void);
-//uint16_t get_distance_toStop(void);
 int get_ambient_testing(void);
-
 void motor_set_danse_speed(float speed_r, float speed_l);
 void dancing_puck(void);
-//void DancingPuck_start(void);
-
-//uint16_t get_distance_toStop(void);
-//void proximityToStop_start(void);
-
-int16_t motors_speed(uint16_t distance_mm);
-uint32_t get_colors(void);
 void ObstacleEncounter_start(void);
-
-
-int8_t get_reset_direction(void);
-void PanicMode_start(void);
-
-void clear_reset_direction(void);
-
+int16_t motors_speed(uint16_t distance_mm);
 int get_led_flag_uhOh(void);
+int8_t get_reset_direction(void);
+void clear_reset_direction(void);
+uint32_t get_colors(void);
+void PanicMode_start(void);
+int8_t get_inclination(imu_msg_t *imu_values);
 
-//void process_color_start(void);
 
 #endif

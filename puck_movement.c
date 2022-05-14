@@ -47,36 +47,21 @@ imu_msg_t imu_values;
 
 static int8_t led_flag_panic = 0; //led_flag
 
-static float threshold_accel = 2.0;  //--->>> un define
-
 #define ACC_OFFSET 0.0239
 #define NB_ACC_SAMPLES 5
 
 static float puck_orientation = 0;
 static float puck_inclination = 0;
-//
-//static float puck_orientation_f = 0;
-//static float puck_inclination_f = 0;
-//
-//static float puck_orientation2 = 0;
-//static float puck_inclination2 = 0;
-//
-//static float accel_total = 0;
 
-//static uint16_t distance_prox = 0;
 static int ambient_testing = 0;
 
 //semaphore
 static BSEMAPHORE_DECL(image_ready_sem, TRUE);
 
-
-//static uint8_t color;
-
 enum {
     RED,
     GREEN,
 	BLUE,
-//    NOCOLOR
 };
 
 //*********PROXIMITY + DISTANCE TO STOP THREAD***********
@@ -91,10 +76,8 @@ void initial_proximity(void) {
 
     // inits the Inter Process Communication bus.
     messagebus_init( & bus, & bus_lock, & bus_condvar);	//pas sur de ce que c'est ni si c'est nécessaire
-    // Proximity sensors
     proximity_start();
     calibrate_ir();
-//    proximityToStop_start();
     chThdSleepMilliseconds(500);	//pas sur de la nécessité
 }
 
@@ -104,8 +87,8 @@ int get_ambient_testing(void){
 
 
 // fonction qui fait bouger le moteur avec la vitesse demandée
-void motor_set_danse_speed(float speed_r, float speed_l)
-{
+void motor_set_danse_speed(float speed_r, float speed_l) {
+
 	 int speed_r_step_s,speed_l_step_s;
 
 	 //transform the speed from cm/s into step/s
@@ -130,20 +113,13 @@ void dancing_puck(void){
 			motor_set_danse_speed(5,5);
 			palTogglePad(GPIOB, GPIOB_LED_BODY);
 
-
 		}else if(dance_counter ==2 || dance_counter ==4){
 
 			motor_set_danse_speed(-5,-5);
 			palTogglePad(GPIOB, GPIOB_LED_BODY);
-//			chThdSleepMilliseconds(200);
 		}
-
 		chThdSleepMilliseconds(300);
-//		motor_set_danse_speed(0,0);
-
 	}
-//	motor_set_danse_speed(0,0);
-
 }
 //********************************************
 //
@@ -170,29 +146,25 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 		//need function to modify the value of distance_mm which will be created in file proximity_sensor
 		distance_mm  = VL53L0X_get_dist_mm();
 
-		speed = motors_speed(distance_mm);
+		speed = motors_speed(distance_mm); //  not  sure  of  the  necessity
 
 		if(led_flag_uhOh == 1) {
 			set_puck_playing_sound(1);
 			reset_direction = 1;
 	    	uint32_t color = get_colors();
 			playNote(NOTE_G4, 120);
-			if(color==RED){
 
+			if(color==RED){
 				clear_leds();
 				for(int i=0; i<4; ++i){
 				    set_rgb_led(i,LED_RGB_INTENSITY,0,0);
 				}
-
 			}else if(color==GREEN){
-
 				clear_leds();
 				for(int i=0; i<4; ++i){
 		   			set_rgb_led(i,0,LED_RGB_INTENSITY,0);
 				}
-
 			}else if(color==BLUE){
-
 				clear_leds();
 				for(int i=0; i<4; ++i){
 				    set_rgb_led(i,0,0,LED_RGB_INTENSITY);
@@ -201,8 +173,6 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 			playNote(NOTE_E4, 120);
 			set_puck_playing_sound(0);
 		}
-
-//	}
 		//fréquence de 100Hz
 		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
 	}
@@ -213,7 +183,6 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 void ObstacleEncounter_start(void){
 
 	chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO+1, ObstacleEncounter, NULL);
-
 }
 
 //function that checks the distance between the robot and a possible obstacle
@@ -221,20 +190,14 @@ int16_t motors_speed(uint16_t distance){
 
 	if(distance > DISTANCE_MIN){
 
-//		speed = SPEED_MAX;
-//		palSetPad(GPIOB, GPIOB_LED_BODY);//-->>test sans les moteurs
-//		speed = 0;
-
 		clear_leds();
 		led_flag_uhOh = 0;
 	}
 	else {
 		set_direction_to_follow(0);
-//		palClearPad(GPIOB, GPIOB_LED_BODY);
 		led_flag_uhOh += 1;
 		speed = 0;
 	}
-
 	return (int16_t)speed;
 }
 
@@ -253,7 +216,6 @@ void clear_reset_direction(void){
 uint32_t get_colors(void){
 
 	uint8_t *img_buff_ptr;
-
    	uint32_t redred 	= 0;
    	uint32_t greengreen = 0;
    	uint32_t blueblue 	= 0;
@@ -272,15 +234,12 @@ uint32_t get_colors(void){
 	}
 
 	if(redred >= greengreen && redred >= blueblue){
-
 		return RED;
 
 	}else if(greengreen >= blueblue){
-
 		return GREEN;
 
 	}else {
-
 		return BLUE;
 	}
 }
@@ -303,23 +262,16 @@ static THD_FUNCTION(PanicMode, arg){
         led_flag_panic = get_inclination(&imu_values);
 
         if(led_flag_panic == 1){
-////        dac_play(NOTE_CS7);//-->>> bonne note mais pas pour  les tests lol
+
         	set_puck_playing_sound(1);
         	reset_direction = 1;
         	motor_set_danse_speed(0,0);
         	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol et  plutot le mettre ici qu'au dessus
         	PanicMode_LED();
-//        	palSetPad(GPIOD, GPIOD_LED_FRONT);
 
         	dac_stop();
             set_puck_playing_sound(0);
-
-
-        }//else{
-//        	dac_stop();
-//        	palClearPad(GPIOD, GPIOD_LED_FRONT);
-//        }
-
+        }
         //100Hz
         chThdSleepUntilWindowed(time, time + MS2ST(10));
 	}
@@ -332,8 +284,6 @@ void PanicMode_start(void)
 
 
 int8_t get_inclination(imu_msg_t *imu_values){
-
-
 	//create a pointer to the array for shorter name
 	float *accel = imu_values->acceleration;
 
@@ -349,9 +299,7 @@ int8_t get_inclination(imu_msg_t *imu_values){
 	puck_inclination = 90.0 - atan2f((float)(acc_z),(float)( acc_x_y)) * CST_RADIAN;
 	puck_orientation = 180 - puck_inclination;
 
-
-
-	if(fabs(accel[X_AXIS]) > threshold_accel || fabs(accel[Y_AXIS]) > 7.0){
+	if(fabs(accel[X_AXIS]) > THRESHOLD_ACC || fabs(accel[Y_AXIS]) > 3.5*THRESHOLD_ACC){
 		return panic;
 
 	}else{
