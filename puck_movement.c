@@ -299,7 +299,7 @@ int8_t get_inclination(imu_msg_t *imu_values){
 	puck_inclination = 90.0 - atan2f((float)(acc_z),(float)( acc_x_y)) * CST_RADIAN;
 	puck_orientation = 180 - puck_inclination;
 
-	if(fabs(accel[X_AXIS]) > THRESHOLD_ACC || fabs(accel[Y_AXIS]) > 3.5*THRESHOLD_ACC){
+	if(fabs(accel[X_AXIS]) > THRESHOLD_ACC_X || fabs(accel[Y_AXIS]) > THRESHOLD_ACC_Y){
 		return panic;
 
 	}else{

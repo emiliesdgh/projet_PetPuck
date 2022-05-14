@@ -8,7 +8,8 @@
 
 #include <sensors/imu.h>
 
-#define THRESHOLD_ACC	2.0
+#define THRESHOLD_ACC_X	2.0
+#define THRESHOLD_ACC_Y	7.0
 #define CST_RADIAN		(180.0/3.1415)	// used to convert radian in degrees
 
 
