@@ -61,32 +61,38 @@ void test_lecture_(void){
 
 		palSetPad(GPIOD, GPIOD_LED_FRONT);
 	}
-	chprintf((BaseSequentialStream *)&SDU1, "ambient light dans le for = %d\n", am_light);
-	chprintf((BaseSequentialStream *)&SDU1, "prox light dans le for = %d\n", prox_light);
+//	chprintf((BaseSequentialStream *)&SDU1, "ambient light dans le for = %d\n", am_light);
+//	chprintf((BaseSequentialStream *)&SDU1, "prox light dans le for = %d\n", prox_light);
 
 
 }
 
 
 //gets ambient light average and compares it to DUSKDAWN
-void ambient_light(uint8_t *buffer) {
+void ambient_light(uint8_t *buffer1,uint8_t *buffer2, uint8_t *buffer3) {
 
 	static uint8_t newday = 1;
 
-	uint32_t mean = 0;
+	uint32_t mean1 = 0;
+	uint32_t mean2 = 0;
+	uint32_t mean3 = 0;
 
 	for(uint16_t i = 0 ; i < IMAGE_BUFFER_SIZE ; i++) {
-			mean += buffer[i];
+			mean1 += buffer1[i];
+			mean2 += buffer2[i];
+			mean3 += buffer3[i];
 		}
 
-		mean /= IMAGE_BUFFER_SIZE;
+		mean1 /= IMAGE_BUFFER_SIZE;
+		mean2 /= IMAGE_BUFFER_SIZE;
+		mean3 /= IMAGE_BUFFER_SIZE;
 
-	if (mean >= DUSK && newday) {
+	if (mean1 >= DUSK && mean2 >= DUSK && mean3 >= DUSK && newday) {
 		//call sayGM function
 		newday = 0;
 		GoodMorning_LED();
 
-	}else if (mean < DAWN && !(newday)) {
+	}else if (mean1 < DAWN && mean2 < DAWN && mean3 < DAWN && !(newday)) {
 		//call sayGN function
 		newday = 1;
 		GoodNight_LED();
@@ -128,24 +134,28 @@ static THD_FUNCTION(ProcessImage, arg) {
     (void)arg;
 
 	uint8_t *img_buff_ptr;
-	uint8_t image[IMAGE_BUFFER_SIZE] = {0};
+	uint8_t imagered[IMAGE_BUFFER_SIZE] = {0};
+	uint8_t imagegreen[IMAGE_BUFFER_SIZE] = {0};
+	uint8_t imageblue[IMAGE_BUFFER_SIZE] = {0};
 	//uint16_t lineWidth = 0;
 
 	//bool send_to_computer = true;
 
-    while(1){
+    while(1) {
     	//waits until an image has been captured
         chBSemWait(&image_ready_sem);
 		//gets the pointer to the array filled with the last image in RGB565    
 		img_buff_ptr = dcmi_get_last_image_ptr();
 
 		//Extracts only the red pixels
-		for(uint16_t i = 0 ; i < (2 * IMAGE_BUFFER_SIZE) ; i+=2){
+		for(uint16_t i = 0 ; i < (2 * IMAGE_BUFFER_SIZE) ; i+=2) {
 			//extracts first 5bits of the first byte
 			//takes nothing from the second byte
-			image[i/2] = (uint8_t)img_buff_ptr[i]&0xF8;
+			imagered[i/2] = (uint8_t)img_buff_ptr[i]&0xF8;
+			imagegreen[i/2] = (uint8_t)img_buff_ptr[i]&0x07;				// red value scaled to green size
+			imageblue[i/2] = (uint8_t)img_buff_ptr[i+1]&0x1F;			// blue value scaled to green size
 		}
-//		ambient_light(image);
+		ambient_light(imagered, imagegreen, imageblue);
 //		test_lecture_();
 		//search for a line in the image and gets its width in pixels
 		//lineWidth = extract_line_width(image);
