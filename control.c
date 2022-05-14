@@ -86,7 +86,7 @@ static THD_FUNCTION(Control, arg) {
 
 
 void Control_start(void) {
-	chThdCreateStatic(waControl, sizeof(waControl), NORMALPRIO+1, Control, NULL) ;
+	chThdCreateStatic(waControl, sizeof(waControl), NORMALPRIO, Control, NULL) ;
 }
 
 void set_robot_moves(uint8_t new_mode) {

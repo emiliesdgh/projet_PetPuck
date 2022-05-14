@@ -148,8 +148,6 @@ void dancing_puck(void){
 		chThdSleepMilliseconds(300);
 	}
 	motor_set_danse_speed(0,0);
-	chThdSleepMilliseconds(300);
-
 
 }
 //********************************************
