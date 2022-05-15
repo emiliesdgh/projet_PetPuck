@@ -35,13 +35,10 @@
 
 //include our files
 #include <audio_processing.h>
-#include <fft.h>
-#include <communications.h>
 #include <puck_led.h>
 #include <process_image.h>
 #include <control.h>
 
-#include <panic_mode.h>
 
 //include the file .h for the main
 #include <main.h>
