@@ -25,7 +25,7 @@
 #include <sensors/imu.h>
 #include <msgbus/messagebus.h>
 #include <i2c_bus.h>
-
+#include <selector.h>
 
 //to use the threads and functions so that the robot can play sounds and melodies
 #include <audio/audio_thread.h>
@@ -46,13 +46,13 @@
 
 
 
-
-void SendUint8ToComputer(uint8_t* data, uint16_t size)
-{
-	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
-	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)&size, sizeof(uint16_t));
-	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)data, size);
-}
+//
+//void SendUint8ToComputer(uint8_t* data, uint16_t size)
+//{
+//	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
+//	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)&size, sizeof(uint16_t));
+//	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)data, size);
+//}
 
 static void serial_start(void)
 {
@@ -143,6 +143,8 @@ int main(void)		//clear all leds at the beggining
 //	playMelodyStart();			//initialization for the melody thread
 //
 
+//	int a = 0;
+//	a = get_selector();
 
 
 

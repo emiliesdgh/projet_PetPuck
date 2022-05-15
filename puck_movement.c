@@ -266,10 +266,10 @@ static THD_FUNCTION(PanicMode, arg){
         	set_puck_playing_sound(1);
         	reset_direction = 1;
         	motor_set_danse_speed(0,0);
-        	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol et  plutot le mettre ici qu'au dessus
+//        	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol et  plutot le mettre ici qu'au dessus
         	PanicMode_LED();
 
-        	dac_stop();
+//        	dac_stop();
             set_puck_playing_sound(0);
         }
         //100Hz
