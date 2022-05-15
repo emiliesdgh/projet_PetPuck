@@ -127,7 +127,7 @@ static THD_FUNCTION(CaptureImage, arg) {
 }
 
 
-static THD_WORKING_AREA(waProcessImage, 1024);
+static THD_WORKING_AREA(waProcessImage, 2048);
 static THD_FUNCTION(ProcessImage, arg) {
 
     chRegSetThreadName(__FUNCTION__);
@@ -151,9 +151,9 @@ static THD_FUNCTION(ProcessImage, arg) {
 		for(uint16_t i = 0 ; i < (2 * IMAGE_BUFFER_SIZE) ; i+=2) {
 			//extracts first 5bits of the first byte
 			//takes nothing from the second byte
-			imagered[i/2] = (uint8_t)img_buff_ptr[i]&0xF8;
-			imagegreen[i/2] = (uint8_t)img_buff_ptr[i]&0x07;				// red value scaled to green size
-			imageblue[i/2] = (uint8_t)img_buff_ptr[i+1]&0x1F;			// blue value scaled to green size
+			imagered[i/2] = (uint8_t)((img_buff_ptr[i]&0xF8)>>2);
+			imagegreen[i/2] = (uint8_t)((img_buff_ptr[i]&0x07)<<3)+(uint8_t)((img_buff_ptr[i+1] & 0xE0)>>5);				// red value scaled to green size
+			imageblue[i/2] = (uint8_t)((img_buff_ptr[i+1]&0x1F)<<1);			// blue value scaled to green size
 		}
 		ambient_light(imagered, imagegreen, imageblue);
 //		test_lecture_();
