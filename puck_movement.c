@@ -35,8 +35,8 @@
 #include <audio_processing.h>
 #include <selector.h>
 
-static thread_reference_t obstacleEncounterThd;
-static msg_t obstacleEncounterMsg;
+//static thread_reference_t obstacleEncounterThd;
+//static msg_t obstacleEncounterMsg;
 
 
 //some static global variables
@@ -204,7 +204,7 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 //to be called in thread of process audio for when he needs to be moving, not on it's own !!!
 void ObstacleEncounter_start(void){
 
-	obstacleEncounterThd = chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO+1, ObstacleEncounter, NULL);
+	chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO+1, ObstacleEncounter, NULL);
 }
 
 //void obstacleEncounter_stop(void){
@@ -308,10 +308,10 @@ static THD_FUNCTION(PanicMode, arg){
         	set_puck_playing_sound(1);
         	reset_direction = 1;
         	motor_set_danse_speed(0,0);
-//        	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol et  plutot le mettre ici qu'au dessus
+        	dac_play(NOTE_CS3); //-->> en pause parce que c'est chiant pendant les tests lol et  plutot le mettre ici qu'au dessus
         	PanicMode_LED();
 
-//        	dac_stop();
+        	dac_stop();
             set_puck_playing_sound(0);
         }
         //100Hz

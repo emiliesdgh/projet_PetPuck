@@ -36,7 +36,7 @@ void GoodMorning_LED(void){
 	}
 	palTogglePad(GPIOB, GPIOB_LED_BODY);
 	chThdSleepMilliseconds(1000);
-	set_selector_flag_GM(1);
+//	set_selector_flag_GM(1);
 }
 /*	function to be called when thread Good Night detects that it's night	*/
 void GoodNight_LED(void){
@@ -68,14 +68,14 @@ void GoodNight_LED(void){
 		if(led_intensity == 20){
 			set_led(3,0);
 		}
-		unsigned int n=10000;
-		while (n--){
-				__asm__ volatile ("nop");
-			}
-		chprintf((BaseSequentialStream *)&SDU1, "intensity : %d\n", led_intensity);
+//		unsigned int n=10000;
+//		while (n--){
+//				__asm__ volatile ("nop");
+//			}
+//		chprintf((BaseSequentialStream *)&SDU1, "intensity : %d\n", led_intensity);
 	}
-	set_selector_flag_GN(2);
-	palClearPad(GPIOB, GPIOB_LED_BODY);
+//	set_selector_flag_GN(2);
+//	palClearPad(GPIOB, GPIOB_LED_BODY);
 
 }
 /*	function to be called when thread panic detects panic mode
