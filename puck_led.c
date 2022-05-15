@@ -1,11 +1,5 @@
-#include <leds.h>
-#include <spi_comm.h>			//to be able to use the RGB LEDs
-#include <chprintf.h>
-#include <main.h>
+
 #include <puck_led.h>
-#include "ch.h"
-#include "hal.h"
-#include <usbcfg.h>
 
 static BSEMAPHORE_DECL(sendToComputer_sem, TRUE);
 /*	function to initialise the LED, put them all in state OFF	*/

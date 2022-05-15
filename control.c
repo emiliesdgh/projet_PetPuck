@@ -1,6 +1,6 @@
 #include "ch.h"
 #include "hal.h"
-#include <main.h>
+//#include <main.h>
 #include <usbcfg.h>
 #include <chprintf.h>
 #include <control.h>
@@ -18,7 +18,6 @@ static THD_FUNCTION(Control, arg) {
 
 	chRegSetThreadName(__FUNCTION__);
 	(void)arg;
-
 	systime_t time;
 
 	while(1) {
@@ -37,7 +36,6 @@ static THD_FUNCTION(Control, arg) {
 			case HEREBOY:
 				run_to_direction(get_direction_to_follow());
 				set_position_reached(1);
-
 				break;
 			case DANCE:
 				dancing_puck();
@@ -66,7 +64,6 @@ static THD_FUNCTION(Control, arg) {
 	}
 
 }
-
 
 void Control_start(void) {
 	chThdCreateStatic(waControl, sizeof(waControl), NORMALPRIO, Control, NULL) ;
@@ -135,7 +132,6 @@ void run_to_direction(uint8_t direction) {
 			direction = 0;
 			set_direction_to_follow(0);
 			stay_put();
-
 			clear_reset_direction();
 		}
 
@@ -146,11 +142,11 @@ void run_to_direction(uint8_t direction) {
 		stay_put();
 	}
 }
+
 void stay_put(void) {
 	right_motor_set_speed(STOP);
 	left_motor_set_speed(STOP);
 }
-
 
 void rotate_to_angle(int angle) {
 	right_motor_set_pos(STOP);
@@ -179,7 +175,6 @@ void rotate_to_angle(int angle) {
 	left_motor_set_pos(STOP);
 }
 
-
 int angle_to_step(int angle) {
     return (int)(STEPPERDEGREE*angle);
 }
@@ -190,7 +185,7 @@ void move_straight(void) {
 	right_motor_set_speed(STOP);
 	left_motor_set_speed(STOP);
 
-	while (cm < XCMSTEP && !get_led_flag_uhOh()){// && get_direction_to_follow()!=0) {
+	while (cm < XCMSTEP && !get_led_flag_uhOh()){
     	right_motor_set_speed(+2*TURNSPEED);
     	left_motor_set_speed(+2*TURNSPEED);
     	cm++;

@@ -15,6 +15,7 @@ CSRC += ./main.c \
 		./audio_processing.c \
 		./puck_movement.c \
 		./control.c \
+		./process_image.c \
 
 #Header folders to include
 INCDIR += 

@@ -5,56 +5,43 @@
 extern "C" {
 #endif
 
+// C standard header files
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+// ChibiOS headers
+#include "ch.h"
+#include "hal.h"
+#include "memory_protection.h"
+#include <usbcfg.h>
+#include <camera/po8030.h>
 #include "camera/dcmi_camera.h"
-#include "msgbus/messagebus.h"
-#include "sensors/proximity.h"
+
+//include  the files from the given library
+#include <spi_comm.h>			//to be able to use the RGB LEDs
+#include "sensors/proximity.h"	//to be  able to use the proximity threads
 #include "parameter/parameter.h"
+#include <leds.h>				//to use the different LED functions that exist already
+#include <motors.h>				//to use the different motor functions that exist already
+//for the  panic mode : gyroscope + accéléromètre
+#include <sensors/imu.h>
+#include <msgbus/messagebus.h>
+#include <i2c_bus.h>
 
-//max intensity for the RGB LEDs
-#define LED_RGB_INTENSITY 100
+//to use the threads and functions so that the robot can play sounds and melodies
+#include <audio/audio_thread.h>
+#include <audio/microphone.h>
+#include <audio/play_melody.h>
+#include <audio/play_sound_file.h>	//to play specific sounds from the SD card
 
-//define for process image
-#define DAWN					70//100//25
-#define DUSK					30//100
-#define IMAGE_BUFFER_SIZE		640
-
-//define for color image
-#define WIDTH_SLOPE				5
-#define MIN_LINE_WIDTH			40
-
-#define ROTATION_THRESHOLD		10
-#define ROTATION_COEFF			2
-#define PXTOCM					1570.0f //experimental value
-#define GOAL_DISTANCE 			10.0f
-#define MAX_DISTANCE 			25.0f
-#define ERROR_THRESHOLD			0.1f	//[cm] because of the noise of the camera
-#define KP						800.0f//20.0f //800.0f
-#define KI 						3.5f //1.1f//10.1f//3.5f	//must not be zero
-#define MAX_SUM_ERROR 			(MOTOR_SPEED_LIMIT/KI)
-
-
-
-//define for obstacle encounter
-#define SPEED_MAX	1000
-#define	DISTANCE_MIN	75.0f
-
-//define for dance mode
-#define NSTEP_ONE_TURN      1000 // number of step for 1 turn of the motor
-#define NSTEP_ONE_EL_TURN   4  //number of steps to do 1 electrical turn
-#define NB_OF_PHASES        4  //number of phases of the motors
-#define WHEEL_PERIMETER     13 // [cm]
-#define SPEED_CONTROL       0
-#define POSITION_CONTROL    1
-
-//define for panic mode
-#define ANGULAR_ACC_DEATH		2.0f
-
-
-//uncomment to use python script and read microhpone data -- careful: also change MICSAMPLESIZE to 1024 in audio_processing.h
-//#define TESTING
-void set_selector_flag_GN(int8_t value);
-void set_selector_flag_GM(int8_t value);
-void startAll(void);
+//include our files
+#include <audio_processing.h>
+#include <puck_led.h>
+#include <process_image.h>
+#include <control.h>
+#include <puck_movement.h>	//--->>> to merge with danse_mode and proximity_sensors maybe
 
 /** Robot wide IPC bus. */
 extern messagebus_t bus;

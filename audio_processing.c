@@ -1,20 +1,4 @@
-#include "ch.h"
-#include "hal.h"
-#include <main.h>
-#include <usbcfg.h>
-#include <chprintf.h>
-
-#include <motors.h>
-#include <audio/microphone.h>
 #include <audio_processing.h>
-#include <arm_math.h>
-#include <puck_led.h>
-#include <motors.h> //?
-#include <control.h>
-#include <puck_movement.h>
-
-//semaphore
-static BSEMAPHORE_DECL(sendToComputer_sem, TRUE);
 
 static float micLinput[MICSAMPLESIZE];
 static float micRinput[MICSAMPLESIZE];
@@ -22,9 +6,6 @@ static float micBinput[MICSAMPLESIZE];
 static uint8_t allowed_to_move = 1;
 static uint16_t sample_number;
 static uint8_t puck_playing_sound = 0;
-
-
-#define MIN_VALUE_THRESHOLD	10000
 
 /*
 *	Callback called when the demodulation of the four microphones is done.
@@ -35,9 +16,8 @@ static uint8_t puck_playing_sound = 0;
 *							so we have [micRight1, micLeft1, micBack1, micFront1, micRight2, etc...]
 *	uint16_t num_samples	Tells how many data we get in total (should always be 640)
 *	*/
-//static thread_t *Controlp;
 
-void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_samples (how much is it?) bc i never call it w/ something
+void processAudioData(int16_t *data, uint16_t num_samples) {
 	if(!get_position_reached() || !allowed_to_move || get_led_flag_uhOh()==1 || puck_playing_sound) {
 			return;
 	}
@@ -47,8 +27,9 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 	static uint16_t rms_above_event = 0;
 	static uint8_t direction = 0;
 	static int16_t count = 0;
-	float32_t current_micR_rms = 0;
 	static float32_t correlation[CORRELATIONSIZE] = {0};
+
+	float32_t current_micR_rms = 0;
 	int32_t percentage_above_loud = 0;
 
 	//loop to fill the buffers
@@ -69,10 +50,10 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 		//stop when buffer is full
 		if(total_samples >= (MICSAMPLESIZE)) {
 			sample_number++;
-			if (sample_number > 9) {
+			if (sample_number > ONESEC) { 				//restart @ 0 after 1 sec
 				sample_number = 0;
 			}
-			total_samples = 0; 	//to refill buffer later
+			total_samples = 0; 							//to refill buffer later
 			current_micR_rms = 0;
 			break;
 		}
@@ -103,24 +84,22 @@ void processAudioData(int16_t *data, uint16_t num_samples) {		//ask about num_sa
 		}
 	}
 
-	if (sample_number == 9 && allowed_to_move) {  //!!! use DEFINE for the 9 (in case MICSAMPLESIZE is changed
+	if (sample_number == ONESEC && allowed_to_move) {
 		allowed_to_move = 0;
+
 		//if music:
-		if (rms_above_event > 4 && percentage_above_loud > 40) {
-
+		if (rms_above_event > MUSICRMS && percentage_above_loud > MUSICPERCENTAGE) {
 			set_robot_moves(DANCE);
-
+		//if called:
 		} else if (rms_above_event > 0) {
-
 			set_direction_to_follow(direction);
 			set_position_reached(0);
 			set_robot_moves(HEREBOY);
-
+		//no audible event
 		} else {
-
 			set_robot_moves(MIC);
-
 		}
+
 		direction = 0;
 		rms_above_event = 0;
 		micR_rms_value = 0;
@@ -149,7 +128,7 @@ uint8_t get_direction(int32_t shift1, int32_t shift2, int32_t shift3) {
 		} else {
 			direction = 2;
 		}
-	} else {//if (shift1 == 0) {
+	} else {
 		if (shift2 < 0 || shift3 < 0) { 	//B lags R or L
 			direction = 1;
 		} else {
@@ -164,7 +143,7 @@ int32_t get_shift(float *carray) {
 	int32_t shift = 0;
 	for (int32_t i = 0 ; i < CORRELATIONSIZE ; i++) {
 		if (carray[i] > cmax) {
-			shift = i - MICSAMPLESIZE;	// - 1;
+			shift = i - MICSAMPLESIZE;
 			cmax = carray[i];
 		}
 		carray[i] = 0;

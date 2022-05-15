@@ -1,61 +1,6 @@
-// C standard header files
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-
-// ChibiOS headers
-#include "ch.h"
-#include "hal.h"
-#include "memory_protection.h"
-#include <usbcfg.h>
-#include <chprintf.h>
-
-#include <camera/po8030.h>
-
-
-//include  the files from the given library
-#include <spi_comm.h>			//to be able to use the RGB LEDs
-#include "sensors/proximity.h"	//to be  able to use the proximity threads
-
-#include <leds.h>				//to use the different LED functions that exist already
-#include <motors.h>				//to use the different motor functions that exist already
-//for the  panic mode : gyroscope + accéléromètre
-//#include <angles.h>
-#include <sensors/imu.h>
-#include <msgbus/messagebus.h>
-#include <i2c_bus.h>
-
-
-//to use the threads and functions so that the robot can play sounds and melodies
-#include <audio/audio_thread.h>
-#include <audio/microphone.h>
-#include <audio/play_melody.h>
-#include <audio/play_sound_file.h>	//to play specific sounds from the SD card
-
-//include our files
-#include <audio_processing.h>
-#include <fft.h>
-#include <communications.h>
-#include <puck_led.h>
-#include <process_image.h>
-#include <control.h>
-
-#include <panic_mode.h>
-
 //include the file .h for the main
 #include <main.h>
-#include <puck_movement.h>	//--->>> to merge with danse_mode and proximity_sensors maybe
 
-
-
-
-//void SendUint8ToComputer(uint8_t* data, uint16_t size)
-//{
-//	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
-//	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)&size, sizeof(uint16_t));
-//	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)data, size);
-//}
 
 static void serial_start(void)
 {
@@ -68,31 +13,9 @@ static void serial_start(void)
 
 	sdStart(&SD3, &ser_cfg); // UART3.
 }
-//TO BE INCLUDES IN MAIN.C ????
-//messagebus_t bus;
-//MUTEX_DECL(bus_lock);
-//CONDVAR_DECL(bus_condvar);
 
-//static void timer12_start(void){
-//    //General Purpose Timer configuration
-//    //timer 12 is a 16 bit timer so we can measure time
-//    //to about 65ms with a 1Mhz counter
-//    static const GPTConfig gpt12cfg = {
-//        1000000,        /* 1MHz timer clock in order to measure uS.*/
-//        NULL,           /* Timer callback.*/
-//        0,
-//        0
-//    };
-//
-//    gptStart(&GPTD12, &gpt12cfg);
-//    //let the timer count to max value
-//    gptStartContinuous(&GPTD12, 0xFFFF);
-//}
-
-int main(void)		//clear all leds at the beggining
+int main(void)
 {
-//	static thread_reference_t trp = NULL;
-//	static thread_t *Controlp;
     halInit();
     chSysInit();
     mpu_init();
@@ -108,154 +31,35 @@ int main(void)		//clear all leds at the beggining
     dac_start();
     //start the RGB LEDs
 	spi_comm_start();
-	initial_proximity();		//initialization for the proximity thread
-	//ATTENTION A L'ORDRE DES APPELS DE  CES FONCTIONS !!
-
-
-	motors_init();				//initialization of the motors
-
-//	mic_start(&processAudioData);
-//	Control_start();
-
+	//start proximity thread
+	initial_proximity();
+	//start motors
+	motors_init();
     //inits the I2C communication
     i2c_start();
-
 	imu_start();
-	//start the image processing ??
-
-	/* Takes pixels 0 to IMAGE_BUFFER_SIZE of the line 10 + 11 (minimum 2 lines because reasons)
-	 * (reasons being how camera's library is written) */
+	//start the image processing
 	po8030_advanced_config(FORMAT_RGB565, 0, 10, IMAGE_BUFFER_SIZE, 2, SUBSAMPLING_X1, SUBSAMPLING_X1);
-//	dcmi_enable_double_buffering();
 	dcmi_set_capture_mode(CAPTURE_ONE_SHOT);
 	dcmi_prepare();
-
 	process_image_start();
+	//start the GM/GN
 	polite_puck_start();
-	//////////
+	//start the audio processing
 	mic_start(&processAudioData);
 	Control_start();
-	//////////
+	//start obstacle encounter
 	playSoundFileStart();
-	//start the mic audio processing  ?
-	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
+	ObstacleEncounter_start();
+	//start panic
 	calibrate_gyro();
 	calibrate_acc();
 	PanicMode_start();
 
-//ush
-//	#ifdef TESTING
-//    static float send_tab[MICSAMPLESIZE];
-//    while (1) { //trying to send the PCM data to the computer, need to edit python script?
-//    			//so far, copied from TP5 files--NOTE: edited audio_processing.c and .h too
-//    //waits until a result must be sent to the computer
-//    wait_send_to_computer();
-//    //we copy the buffer to avoid conflicts
-//    arm_copy_f32(get_audio_buffer_ptr(MIC_R_INPUT), send_tab, MICSAMPLESIZE);
-//    SendF loatToComputer((BaseSequentialStream *) &SD3, send_tab, MICSAMPLESIZE);
-//    }
-//	#endif //TESTING
-//
-	//threads start
-	//%%%%%%%%%%%%%%%%%%%%%%%%%
-//	playMelodyStart();			//initialization for the melody thread
-//
-
-
-
-
-	//starts the calibration of the sensors
-
-
-    //%%%%%%%%%%%%%%%%%%%%%%%%%
-//
-//	PanicMode_start();
-
-
-//
-//    unsigned int a = 22;
-//    unsigned int b = 5;
-//    palSetPad(GPIOD, GPIOD_LED1);
-//    LedClear();
-//	palSetPad(GPIOD, GPIOD_LED1);
-//
-//	int16_t speed_main = 100;
-//
-//	 for(int i = 0; i<10; i++){
-//		 if(i==8){
-//			 speed_main=0;
-//		 }
-//		 danseMode(speed_main);
-//	 }
-//
-//	 for(int i = 0; i<10; i++){
-//
-//		 danseMode_sansArgument();
-//	 }
-//	GoodMorning();
-//	chThdSleepMilliseconds(1000);
-//
-//	GoodNight();
-//	chThdSleepMilliseconds(1000);
-//
-//	Led_panic_mode();
-//	chThdSleepMilliseconds(1000);
-
-//	Led_uhOh();
-
-
-//	while(1){
-////		dancing_puck();
-////		danseMode(speed_main);
-////		test_main_panic();
-////		dancing_puck();
-////		Led_dance_mode();
-//
-//	}
-
-
-//    palTogglePad(GPIOB, GPIOB_LED_BODY);
-//	  set_led(2, 2);
-//	  LedBlink();
-//    while (1) {
-//    	GoodNight();
-//    	chThdSleepMilliseconds(1000);
-//    	palTogglePad(GPIOB, GPIOB_LED_BODY);
-
-		//mic_start(&processAudioData);
-//
-//    }
-//    do{
-//
-//        GoodMorning();
-//
-//        palTogglePad(GPIOB, GPIOB_LED_BODY);
-//
-//    	chThdSleepMilliseconds(1000);
-//
-//    	palTogglePad(GPIOB, GPIOB_LED_BODY);
-
-//    	GoodNight();
-//    	CircleLed();
-//    	palTogglePad(GPIOB, GPIOB_LED_BODY);
-
-
-
-//    	toggle_red_led(LED6, LED_RGB_INTENSITY);
-
-//    	a = a - 1;
-
-//    }while(a!=0);
-
-//    /* Infinite loop. */
     while (1) {
-//    	//waits 1 second
-        chThdSleepMilliseconds(1000);
-////
+		//waits 1 second
+		chThdSleepMilliseconds(1000);
     }
-
-
-
 }
 
 #define STACK_CHK_GUARD 0xe2dee396
