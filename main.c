@@ -44,7 +44,9 @@
 #include <main.h>
 #include <puck_movement.h>	//--->>> to merge with danse_mode and proximity_sensors maybe
 
-
+static msg_t obstacleEncounterThd_resume_test;
+static int8_t selector_flag_GN = 0;
+static int8_t selector_flag_GM = 0;
 
 //
 //void SendUint8ToComputer(uint8_t* data, uint16_t size)
@@ -53,6 +55,14 @@
 //	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)&size, sizeof(uint16_t));
 //	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)data, size);
 //}
+
+void set_selector_flag_GN(int8_t value){
+	selector_flag_GN = value;
+}
+
+void set_selector_flag_GM(int8_t value){
+	selector_flag_GM = value;
+}
 
 static void serial_start(void)
 {
@@ -84,7 +94,108 @@ static void serial_start(void)
 //    gptStart(&GPTD12, &gpt12cfg);
 //    //let the timer count to max value
 //    gptStartContinuous(&GPTD12, 0xFFFF);
+////}
+//static THD_WORKING_AREA(selector_thd_wa, 2048);
+//
+//static THD_FUNCTION(selector_thd, arg)
+//{
+//    (void) arg;
+//    chRegSetThreadName(__FUNCTION__);
+//
+////    uint8_t stop_loop = 0;
+//    systime_t time;
+//
+//    while(1) {
+//       	time = chVTGetSystemTime();
+//
+//   		switch(get_selector()) {
+//   			case 0:
+//   				palSetPad(GPIOB, GPIOB_LED_BODY);
+//
+////   				obstacleEncounterThd_resume_test = ObstacleEncounter_suspend();
+//   				GoodNight_LED();
+//
+//   				break;
+////   			case 1:
+////   				chThdSleepMilliseconds(1000);
+////   				break;
+////   			case 2:
+////				chThdSleepMilliseconds(1000);
+////				break;
+////   			case 3:
+////				chThdSleepMilliseconds(1000);
+////				break;
+////   			case 4:
+////				chThdSleepMilliseconds(1000);
+////				break;
+////   			case 5:
+////				chThdSleepMilliseconds(1000);
+////				break;
+////   			case 6:
+////				chThdSleepMilliseconds(1000);
+////				break;
+////   			case 7:
+////				chThdSleepMilliseconds(1000);
+////				break;
+//   			case 8:
+//
+////   				startAll();
+//
+//   				GoodMorning_LED();
+//
+////   				palClearPad(GPIOB, GPIOB_LED_BODY);
+////   				ObstacleEncounter_resume(obstacleEncounterThd_resume_test);
+//   				break;
+////   			case 9:
+////				chThdSleepMilliseconds(1000);
+////				break;
+////			case 10:
+////				chThdSleepMilliseconds(1000);
+////				break;
+////			case 12:
+////				chThdSleepMilliseconds(1000);
+////				break;
+////			case 13:
+////				chThdSleepMilliseconds(1000);
+////				break;
+////			case 14:
+////				chThdSleepMilliseconds(1000);
+////				break;
+////			case 15:
+////				chThdSleepMilliseconds(1000);
+////				break;
+//			default :
+//   				chThdSleepMilliseconds(1000);
+//   				break;
+//
+//   	    }
+//   		//fréquence de 100Hz
+//   		chThdSleepUntilWindowed(time, time + MS2ST(10));
+//   	}
 //}
+//void stopAll(void){
+//	obstacleEncounter_stop();
+//}
+//
+//void startAll(void){
+//
+//	mic_start(&processAudioData);
+//	Control_start();
+//
+//    //inits the I2C communication
+//    i2c_start();
+//
+//	imu_start();
+//	//start the image processing ??
+//	process_image_start();
+//	//start the mic audio processing  ?
+//	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
+//	calibrate_gyro();
+//	calibrate_acc();
+////	PanicMode_start();
+//
+//}
+
 
 int main(void)		//clear all leds at the beggining
 {
@@ -110,7 +221,7 @@ int main(void)		//clear all leds at the beggining
 
 
 	motors_init();				//initialization of the motors
-
+//	startAll();
 	mic_start(&processAudioData);
 	Control_start();
 
@@ -118,33 +229,34 @@ int main(void)		//clear all leds at the beggining
     i2c_start();
 
 	imu_start();
-	//start the image processing ??
-	process_image_start();
-	//start the mic audio processing  ?
+
+
 	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
 	calibrate_gyro();
 	calibrate_acc();
 	PanicMode_start();
-//ush
-//	#ifdef TESTING
-//    static float send_tab[MICSAMPLESIZE];
-//    while (1) { //trying to send the PCM data to the computer, need to edit python script?
-//    			//so far, copied from TP5 files--NOTE: edited audio_processing.c and .h too
-//    //waits until a result must be sent to the computer
-//    wait_send_to_computer();
-//    //we copy the buffer to avoid conflicts
-//    arm_copy_f32(get_audio_buffer_ptr(MIC_R_INPUT), send_tab, MICSAMPLESIZE);
-//    SendF loatToComputer((BaseSequentialStream *) &SD3, send_tab, MICSAMPLESIZE);
-//    }
-//	#endif //TESTING
-//
-	//threads start
-	//%%%%%%%%%%%%%%%%%%%%%%%%%
-//	playMelodyStart();			//initialization for the melody thread
-//
 
-//	int a = 0;
-//	a = get_selector();
+	playMelodyStart();			//initialization for the melody thread
+
+
+//
+//	chThdCreateStatic(selector_thd_wa, sizeof(selector_thd_wa), NORMALPRIO+2, selector_thd, NULL);
+
+//	while (1) {
+//
+//		switch(get_selector()) {
+//			case 0:
+////				ObstacleEncounter_start();
+//				break;
+//			case 1:
+////				ObstacleEncounter_stop();
+//
+//				break;
+//			default :
+//				break;
+//		}
+//
+//	}
 
 
 
@@ -197,6 +309,58 @@ int main(void)		//clear all leds at the beggining
 //
 //	}
 
+	   /* Infinite loop. */
+	    while (1) {
+	    	switch(get_selector()) {
+	    	case 0:
+//	    		chThdSleepMilliseconds(1000);
+	    		chprintf((BaseSequentialStream *)&SDU1, "just in case 0 =  %d\n", get_selector());
+	    		set_selector_flag_GN(1);
+	    		chprintf((BaseSequentialStream *)&SDU1, "before while selector =  %d\n", get_selector());
+	    		palSetPad(GPIOB, GPIOB_LED_BODY);
+	    		while(selector_flag_GN==1  || get_selector()==0){
+//	    			palSetPad(GPIOB, GPIOB_LED_BODY);
+	    			GoodNight_LED();
+
+	    			chprintf((BaseSequentialStream *)&SDU1, "in while selector =  %d\n", get_selector());
+	    		}
+	    		chprintf((BaseSequentialStream *)&SDU1, "out while ");
+//	    		do{
+////	    			chThdSleepMilliseconds(1000);
+//	    			GoodNight_LED();
+//	    		}while(selector_flag_GN==0);
+//	    		palSetPad(GPIOB, GPIOB_LED_BODY);
+	    		break;
+//	    	case 1:
+////	    		chThdSleepMilliseconds(1000);
+////	    		selector_flag_GN++;
+////				palSetPad(GPIOB, GPIOB_LED_BODY);
+////				while(selector_flag_GN==0){
+//////	    			palSetPad(GPIOB, GPIOB_LED_BODY);
+////					GoodNight_LED();
+////				}
+////	    		do{
+//////	    			chThdSleepMilliseconds(1000);
+////	    			GoodNight_LED();
+////	    		}while(selector_flag_GN==0);
+//	    		palClearPad(GPIOB, GPIOB_LED_BODY);
+//				break;
+	    	case 8:
+//	    		selector_flag_GM++;
+	    		if(selector_flag_GM==0){
+	    			GoodMorning_LED();
+	    			selector_flag_GM++;
+	    		}
+	    		break;
+	    	default:
+//	    		palClearPad(GPIOB, GPIOB_LED_BODY);
+	    		set_selector_flag_GN(0);
+	    		set_selector_flag_GM(0);
+//	    		chThdSleepMilliseconds(1000);
+	    		break;
+	    	}
+	    }
+
 
 //    palTogglePad(GPIOB, GPIOB_LED_BODY);
 //	  set_led(2, 2);
@@ -232,11 +396,11 @@ int main(void)		//clear all leds at the beggining
 //    }while(a!=0);
 
 //    /* Infinite loop. */
-    while (1) {
-//    	//waits 1 second
-        chThdSleepMilliseconds(1000);
-////
-    }
+//    while (1) {
+////    	//waits 1 second
+//        chThdSleepMilliseconds(1000);
+//////
+//    }
 
 
 

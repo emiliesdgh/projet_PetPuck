@@ -1,7 +1,13 @@
 #include <leds.h>
+#include <spi_comm.h>			//to be able to use the RGB LEDs
+#include <chprintf.h>
 #include <main.h>
 #include <puck_led.h>
+#include "ch.h"
+#include "hal.h"
+#include <usbcfg.h>
 
+static BSEMAPHORE_DECL(sendToComputer_sem, TRUE);
 /*	function to initialise the LED, put them all in state OFF	*/
 void LedClear(void){
 	clear_leds();
@@ -30,17 +36,19 @@ void GoodMorning_LED(void){
 	}
 	palTogglePad(GPIOB, GPIOB_LED_BODY);
 	chThdSleepMilliseconds(1000);
+	set_selector_flag_GM(1);
 }
 /*	function to be called when thread Good Night detects that it's night	*/
 void GoodNight_LED(void){
 	LedClear();
-	int led_intensity = LED_RGB_INTENSITY;
+//	int led_intensity = LED_RGB_INTENSITY;
 	int led_value =  1;
-
+	chprintf((BaseSequentialStream *)&SDU1, "in GN ");
 	for(int j=0 ; j<4; j++){
 		set_led(j,1);
 	}
-	do{
+	for(int led_intensity = LED_RGB_INTENSITY; led_intensity>=0; led_intensity--){
+		chprintf((BaseSequentialStream *)&SDU1, "in GN 2dn for ");
 		for(int i=0; i<4; i++){
 			LedSet_intensity(i, led_value, led_intensity);
 		}
@@ -60,9 +68,15 @@ void GoodNight_LED(void){
 		if(led_intensity == 20){
 			set_led(3,0);
 		}
-		chThdSleepMilliseconds(30);
+		unsigned int n=10000;
+		while (n--){
+				__asm__ volatile ("nop");
+			}
+		chprintf((BaseSequentialStream *)&SDU1, "intensity : %d\n", led_intensity);
+	}
+	set_selector_flag_GN(2);
+	palClearPad(GPIOB, GPIOB_LED_BODY);
 
-	}while(led_intensity !=  0);
 }
 /*	function to be called when thread panic detects panic mode
  * 	all LEDs blinking and the RDG in every color	*/

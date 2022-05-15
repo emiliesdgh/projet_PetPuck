@@ -33,6 +33,10 @@
 #include <control.h>
 #include <puck_movement.h>
 #include <audio_processing.h>
+#include <selector.h>
+
+static thread_reference_t obstacleEncounterThd;
+static msg_t obstacleEncounterMsg;
 
 
 //some static global variables
@@ -137,7 +141,21 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 
     uint16_t distance_mm = 0;
 
+	po8030_advanced_config(FORMAT_RGB565, 0, 10, IMAGE_BUFFER_SIZE, 2, SUBSAMPLING_X1, SUBSAMPLING_X1);
+	dcmi_enable_double_buffering();
+	dcmi_set_capture_mode(CAPTURE_ONE_SHOT);
+	dcmi_prepare();
+
 	while(1){
+
+//		if(get_selector()==0){
+//			chThdYield();
+//			break;
+//		}
+		while(get_selector()==0){
+			chThdYield();
+//			chThdSleepMilliseconds(1000);
+		}
 
 		time = chVTGetSystemTime();
         //wait for new measures to be published
@@ -151,6 +169,10 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 		if(led_flag_uhOh == 1) {
 			set_puck_playing_sound(1);
 			reset_direction = 1;
+	        //starts a capture
+			dcmi_capture_start();
+			//waits for the capture to be done
+			wait_image_ready();
 	    	uint32_t color = get_colors();
 			playNote(NOTE_G4, 120);
 
@@ -182,8 +204,23 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 //to be called in thread of process audio for when he needs to be moving, not on it's own !!!
 void ObstacleEncounter_start(void){
 
-	chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO+1, ObstacleEncounter, NULL);
+	obstacleEncounterThd = chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO+1, ObstacleEncounter, NULL);
 }
+
+//void obstacleEncounter_stop(void){
+//
+//	chThdTerminate(obstacleEncounterThd);
+//}
+//
+//msg_t ObstacleEncounter_suspend(void) {
+//	return obstacleEncounterMsg = chThdSuspendS(&obstacleEncounterThd);
+//}
+//
+//void ObstacleEncounter_resume(msg_t suspend_return){
+//
+//	chThdResume(&obstacleEncounterThd, suspend_return);
+////	chSchGoSleepS()
+//}
 
 //function that checks the distance between the robot and a possible obstacle
 int16_t motors_speed(uint16_t distance){
@@ -255,6 +292,11 @@ static THD_FUNCTION(PanicMode, arg){
 
 	while(1){
 
+		while(get_selector()==0){
+			chThdYield();
+		//			chThdSleepMilliseconds(1000);
+		}
+
 		time = chVTGetSystemTime();
         //wait for new measures to be published
         messagebus_topic_wait(imu_topic, &imu_values, sizeof(imu_values));
@@ -282,6 +324,10 @@ void PanicMode_start(void)
 	chThdCreateStatic(waPanicMode, sizeof(waPanicMode), NORMALPRIO+2 , PanicMode, NULL) ;
 }
 
+//void PanicMode_stop(void)
+//{
+//	chThdTerminate(chThdCreateStatic(waPanicMode, sizeof(waPanicMode), NORMALPRIO+2 , PanicMode, NULL));
+//}
 
 int8_t get_inclination(imu_msg_t *imu_values){
 	//create a pointer to the array for shorter name
