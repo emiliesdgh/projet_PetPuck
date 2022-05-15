@@ -7,6 +7,7 @@
 #include <puck_movement.h>
 #include <motors.h>
 #include <audio_processing.h>
+#include <selector.h>
 
 static uint8_t robot_moves;
 static uint8_t direction_to_follow;
@@ -21,6 +22,10 @@ static THD_FUNCTION(Control, arg) {
 	systime_t time;
 
 	while(1) {
+
+		while(get_selector()==0) {
+			chThdYield();
+		}
 		time = chVTGetSystemTime();
 
 		switch (get_robot_moves()) {

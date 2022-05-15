@@ -25,6 +25,7 @@ void clear_reset_direction(void);
 uint32_t get_colors(void);
 void PanicMode_start(void);
 int8_t get_inclination(imu_msg_t *imu_values);
+void sum_pixels(uint8_t *buffer1,uint8_t *buffer2, uint8_t *buffer3, uint32_t* redsum, uint32_t* greensum, uint32_t* bluesum);
 
 
 #endif

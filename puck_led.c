@@ -37,13 +37,13 @@ void GoodMorning_LED(void){
 
 		LedSet_ALL(i,1);
 	}
-	palTogglePad(GPIOB, GPIOB_LED_BODY);
+//	palTogglePad(GPIOB, GPIOB_LED_BODY);
 	chThdSleepMilliseconds(1000);
 	for(int i=0; i<8; i++){
 
 			LedSet_ALL(i,0);
 	}
-	palTogglePad(GPIOB, GPIOB_LED_BODY);
+//	palTogglePad(GPIOB, GPIOB_LED_BODY);
 	chThdSleepMilliseconds(1000);
 }
 

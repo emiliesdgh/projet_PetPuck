@@ -14,8 +14,8 @@ extern "C" {
 #define LED_RGB_INTENSITY 100
 
 //define for process image
-#define DAWN					25//50
-#define DUSK					100//70
+#define DAWN					70//100//25
+#define DUSK					30//100
 #define IMAGE_BUFFER_SIZE		640
 
 //define for color image

@@ -33,6 +33,8 @@
 #include <control.h>
 #include <puck_movement.h>
 #include <audio_processing.h>
+#include <process_image.h>
+#include <selector.h>
 
 
 //some static global variables
@@ -126,7 +128,7 @@ void dancing_puck(void){
 
 //*********OBSTACLE ENCOUNTER THREAD***********
 //initialization of the obstacle encounter thread
-static THD_WORKING_AREA(waObstacleEncounter, 1024);
+static THD_WORKING_AREA(waObstacleEncounter, 2048);
 static THD_FUNCTION(ObstacleEncounter, arg){
 
 	chRegSetThreadName(__FUNCTION__);
@@ -137,7 +139,11 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 
     uint16_t distance_mm = 0;
 
-	while(1){
+	while(1) {
+
+		while(get_selector()==0) {
+			chThdYield();
+		}
 
 		time = chVTGetSystemTime();
         //wait for new measures to be published
@@ -172,6 +178,8 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 			}
 			playNote(NOTE_E4, 120);
 			set_puck_playing_sound(0);
+		} else {
+
 		}
 		//fréquence de 100Hz
 		chThdSleepUntilWindowed(time, time + MS2ST(10)); //- > mettre dans chaque thread et le 10 c'est la periode
@@ -181,7 +189,6 @@ static THD_FUNCTION(ObstacleEncounter, arg){
 //function to start the obstacle encounter thread
 //to be called in thread of process audio for when he needs to be moving, not on it's own !!!
 void ObstacleEncounter_start(void){
-
 	chThdCreateStatic(waObstacleEncounter, sizeof(waObstacleEncounter), NORMALPRIO+1, ObstacleEncounter, NULL);
 }
 
@@ -213,18 +220,37 @@ void clear_reset_direction(void){
 	 reset_direction = 0;
 }
 
-uint32_t get_colors(void){
 
-	uint8_t *img_buff_ptr;
+uint32_t get_colors(void) {
+
+//	dcmi_capture_start();
+//	//waits for the capture to be done
+//	wait_image_ready();
+
+
+	get_dcmi_capture();
+
+	uint8_t *img_buff_ptr = 0;
    	uint32_t redred 	= 0;
    	uint32_t greengreen = 0;
-   	uint32_t blueblue 	= 0;
+   	uint32_t blueblue = 0;
 
-	// Gets the pointer to the array filled with the last image in RGB565
-   	img_buff_ptr = dcmi_get_last_image_ptr();
+//	uint8_t imagered[IMAGE_BUFFER_SIZE] = {0};				//when using mutex
+//	uint8_t imagegreen[IMAGE_BUFFER_SIZE] = {0};
+//	uint8_t imageblue[IMAGE_BUFFER_SIZE] = {0};
 
+	//	// Gets the pointer to the array filled with the last image in RGB565
+	img_buff_ptr = dcmi_get_last_image_ptr();
+
+//  extract_pixels_RGB(imagered, imagegreen, imageblue, &img_buff_ptr);
+
+//	extract_pixels_R(imagered, img_buff_ptr);
+//	extract_pixels_G(imagegreen, img_buff_ptr);
+//	extract_pixels_B(imageblue, img_buff_ptr);
+
+//
 	// Extracts and adds all pixels values of one line, by color (format RGB565)
-	for(uint16_t i = 0 ; i < (2 * IMAGE_BUFFER_SIZE) ; i+=2){	// pixels are acquired on two bytes
+	for(uint16_t i = 0 ; i < (2 * IMAGE_BUFFER_SIZE) ; i+=2) {	// pixels are acquired on two bytes
 
 		redred += (img_buff_ptr[i] & 0xF8) >> 2;				// red value scaled to green size
 
@@ -233,16 +259,32 @@ uint32_t get_colors(void){
 		blueblue += (img_buff_ptr[i+1] & 0x1F) << 1;			// blue value scaled to green size
 	}
 
-	if(redred >= greengreen && redred >= blueblue){
+//   	sum_pixels(imagered, imagegreen, imageblue, &redred, &greengreen, &blueblue);  //when using mutex
+
+//   	chprintf((BaseSequentialStream *)&SDU1, "red is %d\n", redred);
+//   	chprintf((BaseSequentialStream *)&SDU1, "g is %d\n", greengreen);
+//   	chprintf((BaseSequentialStream *)&SDU1, "b is %d\n", blueblue);
+
+	if (redred >= greengreen && redred >= blueblue){
 		return RED;
 
-	}else if(greengreen >= blueblue){
+	} else if(greengreen >= blueblue){
 		return GREEN;
 
-	}else {
+	} else {
 		return BLUE;
 	}
 }
+
+void sum_pixels(uint8_t *buffer1, uint8_t *buffer2, uint8_t *buffer3, uint32_t* redsum, uint32_t* greensum, uint32_t* bluesum) {
+	for(uint16_t i = 0 ; i < IMAGE_BUFFER_SIZE ; i++) {
+		redsum += buffer1[i];
+		greensum += buffer2[i];
+		bluesum += buffer3[i];
+	}
+}
+
+
 //********************************************
 static THD_WORKING_AREA(waPanicMode, 1024);
 static THD_FUNCTION(PanicMode, arg){
@@ -254,6 +296,10 @@ static THD_FUNCTION(PanicMode, arg){
 	messagebus_topic_t *imu_topic = messagebus_find_topic_blocking(&bus, "/imu");
 
 	while(1){
+
+		while(get_selector()==0) {
+			chThdYield();
+		}
 
 		time = chVTGetSystemTime();
         //wait for new measures to be published

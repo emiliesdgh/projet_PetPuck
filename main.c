@@ -50,12 +50,12 @@
 
 
 
-void SendUint8ToComputer(uint8_t* data, uint16_t size)
-{
-	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
-	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)&size, sizeof(uint16_t));
-	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)data, size);
-}
+//void SendUint8ToComputer(uint8_t* data, uint16_t size)
+//{
+//	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
+//	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)&size, sizeof(uint16_t));
+//	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)data, size);
+//}
 
 static void serial_start(void)
 {
@@ -114,20 +114,35 @@ int main(void)		//clear all leds at the beggining
 
 	motors_init();				//initialization of the motors
 
-	mic_start(&processAudioData);
-	Control_start();
+//	mic_start(&processAudioData);
+//	Control_start();
 
     //inits the I2C communication
     i2c_start();
 
 	imu_start();
 	//start the image processing ??
+
+	/* Takes pixels 0 to IMAGE_BUFFER_SIZE of the line 10 + 11 (minimum 2 lines because reasons)
+	 * (reasons being how camera's library is written) */
+	po8030_advanced_config(FORMAT_RGB565, 0, 10, IMAGE_BUFFER_SIZE, 2, SUBSAMPLING_X1, SUBSAMPLING_X1);
+//	dcmi_enable_double_buffering();
+	dcmi_set_capture_mode(CAPTURE_ONE_SHOT);
+	dcmi_prepare();
+
 	process_image_start();
+	polite_puck_start();
+	//////////
+	mic_start(&processAudioData);
+	Control_start();
+	//////////
+	playSoundFileStart();
 	//start the mic audio processing  ?
 	ObstacleEncounter_start();	//initialization for the obstacle encounter thread
 	calibrate_gyro();
 	calibrate_acc();
 	PanicMode_start();
+
 //ush
 //	#ifdef TESTING
 //    static float send_tab[MICSAMPLESIZE];
